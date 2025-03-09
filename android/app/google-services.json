@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "419361277278",
+    "firebase_url": "https://provaandroid1-f19cd-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "provaandroid1-f19cd",
+    "storage_bucket": "provaandroid1-f19cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419361277278:android:6dc287109c341c65edfbcf",
+        "android_client_info": {
+          "package_name": "com.example.vociapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQa6A56CapPnI1v-AR66rnj00DM9Ye4Kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419361277278:android:9591e32ba82eff5cedfbcf",
+        "android_client_info": {
+          "package_name": "com.voci.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQa6A56CapPnI1v-AR66rnj00DM9Ye4Kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419361277278:android:0ae4684eed772899edfbcf",
+        "android_client_info": {
+          "package_name": "com.voci.app.voci_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQa6A56CapPnI1v-AR66rnj00DM9Ye4Kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
