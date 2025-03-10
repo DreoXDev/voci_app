@@ -16,10 +16,3 @@ final homelessFirestoreDatasourceProvider = Provider<HomelessFirestoreDatasource
     firestore: ref.watch(firestoreProvider),
   ),
 );
-
-// Repository provider
-final homelessRepositoryProvider = Provider<HomelessRepository>(
-      (ref) => HomelessRepositoryImpl(
-    ref.watch(homelessFirestoreDatasourceProvider),
-  ),
-);
