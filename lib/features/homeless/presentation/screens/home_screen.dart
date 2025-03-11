@@ -61,14 +61,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  //This is an example function, you need to update the database and all that stuff
+  void _doSomethingWithHomeless(HomelessEntity homeless){
+    //Here update the database
+    //Here do something with the data
+    print("Do something with ${homeless.name}");
+  }
+  // Placeholder function for the FAB action
+  void _addHomeless() {
+    // Implement the logic to add a new homeless person here.
+    print("Adding new homeless person...");
+  }
+
   @override
   Widget build(BuildContext context) {
     final homelessState = ref.watch(homelessControllerProvider);
-    ref.watch(searchQueryProvider);
+    final String searchQuery = ref.watch(searchQueryProvider);
     final List<HomelessEntity> data = homelessState.data;
 
     return Scaffold(
       appBar:  HomeAppBar(searchController: _searchController),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addHomeless,
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(homelessControllerProvider);
@@ -95,12 +112,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     );
                   }
                   final homeless = data[index];
-                  return HomelessListItem(
-                    key: ValueKey(homeless.id),
-                    homeless: homeless,
-                    showPreferredIcon: true,
-                    onChipClick: () {},
-                    onClick: () {},
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Dismissible(
+                      key: ValueKey(homeless.id),
+                      direction: DismissDirection.startToEnd,
+                      confirmDismiss: (direction) async {
+                        // Always return false so the item is not removed.
+                        return false;
+                      },
+                      onDismissed: (direction){
+                        _doSomethingWithHomeless(homeless);
+                      },
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 16),
+                        child: const Icon(Icons.message, color: Colors.white),
+                      ),
+                      child: HomelessListItem(
+                        key: ValueKey(homeless.id),
+                        homeless: homeless,
+                        showPreferredIcon: true,
+                        onChipClick: () {},
+                        onClick: () {},
+                      ),
+                    ),
                   );
                 },
               ),
@@ -118,7 +155,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 )
             ],
-          )),
+          )
+      ),
     );
   }
 }
