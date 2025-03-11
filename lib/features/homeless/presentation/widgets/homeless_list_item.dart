@@ -18,10 +18,10 @@ class HomelessListItem extends StatefulWidget {
   });
 
   @override
-  _HomelessListItemState createState() => _HomelessListItemState();
+  HomelessListItemState createState() => HomelessListItemState();
 }
 
-class _HomelessListItemState extends State<HomelessListItem> {
+class HomelessListItemState extends State<HomelessListItem> {
   bool isPreferred = false;
 
   void togglePreferred() {

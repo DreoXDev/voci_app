@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:voci_app/core/usecase/usecase.dart';
 import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
 import 'package:voci_app/features/homeless/domain/usecases/get_homeless.dart';
 
