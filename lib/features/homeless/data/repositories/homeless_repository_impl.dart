@@ -4,17 +4,25 @@ import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart'
 import 'package:voci_app/features/homeless/domain/repositories/homeless_repository.dart';
 
 class HomelessRepositoryImpl implements HomelessRepository {
-  final HomelessFirestoreDatasource _datasource;
+  final HomelessFirestoreDatasource _homelessFirestoreDatasource;
 
-  HomelessRepositoryImpl(this._datasource);
+  HomelessRepositoryImpl(this._homelessFirestoreDatasource);
 
   @override
   Future<List<HomelessEntity>> getHomelessList({DocumentSnapshot? lastDocument}) async {
-    final list = await _datasource.getHomelessList(lastDocument: lastDocument);
-    return list.map((e) => e.toEntity()).toList();
+    final homelessList = await _homelessFirestoreDatasource.getHomelessList(lastDocument: lastDocument);
+    return homelessList.map((homeless) => homeless.toEntity()).toList();
+  }
+
+  @override
+  Future<(List<HomelessEntity>, DocumentSnapshot?)> searchHomeless(
+      {required String searchQuery, DocumentSnapshot? lastDocument}) async {
+    final (homelessList, newLastDocument) = await _homelessFirestoreDatasource.searchHomeless(
+        searchQuery: searchQuery, lastDocument: lastDocument);
+    return (homelessList.map((homeless) => homeless.toEntity()).toList(), newLastDocument);
   }
   @override
-  Future<DocumentSnapshot?> getLastVisibleDocument({DocumentSnapshot? lastDocument}) async {
-    return await _datasource.getLastVisibleDocument(lastDocument: lastDocument);
+  Future<DocumentSnapshot?> getLastVisibleDocument({required DocumentSnapshot? lastDocument}) async {
+    return await _homelessFirestoreDatasource.getLastVisibleDocument(lastDocument: lastDocument);
   }
 }

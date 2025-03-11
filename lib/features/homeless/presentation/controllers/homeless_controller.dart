@@ -2,23 +2,69 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
 import 'package:voci_app/features/homeless/domain/usecases/get_homeless.dart';
+import 'package:voci_app/features/homeless/domain/usecases/search_homeless.dart';
 
 class HomelessController extends StateNotifier<HomelessState> {
   final GetHomeless _getHomeless;
-  HomelessController(this._getHomeless) : super(HomelessState.initial());
+  final SearchHomeless _searchHomeless;
+  HomelessController(this._getHomeless, this._searchHomeless) : super(HomelessState.initial());
 
-  Future<void> getHomelessList() async {
-    if (state.isLoading || !state.hasMore) return;
+  Future<void> getHomelessList({bool isSearch = false}) async {
+    print('getHomelessList: isSearch = $isSearch');
+    if (state.isLoading || (!state.hasMore && !isSearch)) {
+      print('getHomelessList: early return');
+      return;
+    }
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final homelessList = await _getHomeless(GetHomelessParams(lastDocument: state.lastDocument));
-      DocumentSnapshot? newLastDocument = await _getHomeless.repository.getLastVisibleDocument(lastDocument: state.lastDocument);
-      _updateState(homelessList,newLastDocument);
+      if(!isSearch){
+        print('getHomelessList: Getting homeless data');
+        final homelessList = await _getHomeless(GetHomelessParams(lastDocument: state.lastDocument));
+        DocumentSnapshot? newLastDocument = await _getHomeless.repository.getLastVisibleDocument(lastDocument: state.lastDocument);
+        _updateState(homelessList,newLastDocument);
+      }else{
+        print('getHomelessList: Calling searchHomelessList from getHomelessList');
+        await searchHomelessList();
+      }
     } catch (error, stackTrace) {
+      print('getHomelessList: Error - $error');
       state = state.copyWith(isLoading: false, error: AsyncError(error, stackTrace));
     }
   }
+  Future<void> searchHomelessList({String searchQuery = ''}) async {
+    print('searchHomelessList: searchQuery = $searchQuery');
+    if (state.isLoading) {
+      print('searchHomelessList: early return, is loading');
+      return;
+    }
+    if (searchQuery.isEmpty) {
+      print('searchHomelessList: Empty query');
+      _clearSearchResults();
+      return;
+    }
+    if (searchQuery.length < 2) {
+      print('searchHomelessList: less than 2 characters');
+      return;
+    }
+    state = state.copyWith(isLoading: true, error: null, data: [], lastDocument: null, hasMore: true, isSearching: true);
+    try {
+      print('searchHomelessList: Searching');
+      final (homelessList, newLastDocument) =
+      await _searchHomeless(SearchHomelessParams(searchQuery: searchQuery, lastDocument: state.lastDocument));
+      print('searchHomelessList: found ${homelessList.length} homeless');
+      _updateState(homelessList, newLastDocument);
+    } catch (error, stackTrace) {
+      print('searchHomelessList: Error - $error');
+      state = state.copyWith(isLoading: false, error: AsyncError(error, stackTrace));
+    }
+  }
+  void _clearSearchResults() {
+    print('_clearSearchResults:');
+    state = state.copyWith(data: [], lastDocument: null, hasMore: true, isSearching: false);
+    getHomelessList();
+  }
   void _updateState(List<HomelessEntity> homelessList, DocumentSnapshot? newLastDocument){
+    print('_updateState: new data ${homelessList.length}');
     List<HomelessEntity> updatedList;
     if (state.lastDocument == null) {
       updatedList = [...homelessList];
@@ -32,6 +78,9 @@ class HomelessController extends StateNotifier<HomelessState> {
       hasMore: newLastDocument != null,
     );
   }
+  bool getIsSearching(){
+    return state.isSearching;
+  }
 }
 
 class HomelessState {
@@ -40,6 +89,7 @@ class HomelessState {
   final bool isLoading;
   final AsyncValue? error;
   final bool hasMore;
+  final bool isSearching;
 
   HomelessState({
     required this.data,
@@ -47,6 +97,7 @@ class HomelessState {
     required this.isLoading,
     this.error,
     required this.hasMore,
+    required this.isSearching,
   });
 
   factory HomelessState.initial() => HomelessState(
@@ -54,6 +105,7 @@ class HomelessState {
     lastDocument: null,
     isLoading: false,
     hasMore: true,
+    isSearching: false,
   );
 
   HomelessState copyWith({
@@ -62,6 +114,7 @@ class HomelessState {
     bool? isLoading,
     AsyncValue? error,
     bool? hasMore,
+    bool? isSearching
   }) {
     return HomelessState(
       data: data ?? this.data,
@@ -69,6 +122,7 @@ class HomelessState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       hasMore: hasMore ?? this.hasMore,
+      isSearching: isSearching ?? this.isSearching,
     );
   }
 }

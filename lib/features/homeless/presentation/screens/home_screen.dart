@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fuzzywuzzy/fuzzywuzzy.dart';
-import 'package:fuzzywuzzy/model/extracted_result.dart';
 import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
 import 'package:voci_app/features/homeless/presentation/providers.dart';
 import 'package:voci_app/features/homeless/presentation/widgets/home_app_bar.dart';
@@ -16,12 +14,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(homelessControllerProvider.notifier).getHomelessList());
     _scrollController.addListener(_onScroll);
+    _searchController.addListener(_onSearch);
   }
 
   @override
@@ -29,12 +29,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
+    _searchController
+      ..removeListener(_onSearch)
+      ..dispose();
     super.dispose();
   }
 
   void _onScroll() {
     if (_isBottom) {
-      ref.read(homelessControllerProvider.notifier).getHomelessList();
+      final homelessController = ref.read(homelessControllerProvider.notifier);
+      if(homelessController.getIsSearching()){
+        homelessController.searchHomelessList(searchQuery: _searchController.text);
+      }else{
+        homelessController.getHomelessList();
+      }
     }
   }
 
@@ -44,45 +52,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentScroll = _scrollController.offset;
     return currentScroll >= (maxScroll * 0.9);
   }
+  void _onSearch(){
+    ref.read(homelessControllerProvider.notifier).searchHomelessList(searchQuery: _searchController.text);
+    if (_searchController.text.isEmpty) {
+      ref.read(searchQueryProvider.notifier).state = "";
+    } else {
+      ref.read(searchQueryProvider.notifier).state = _searchController.text;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final homelessState = ref.watch(homelessControllerProvider);
-    final String searchQuery = ref.watch(searchQueryProvider);
+    ref.watch(searchQueryProvider);
     final List<HomelessEntity> data = homelessState.data;
-    List<HomelessEntity> filteredData = [];
-
-    if (searchQuery.length < 2) {
-      filteredData = data;
-    } else {
-      final allStringsToSearch = data
-          .map((homeless) => [
-        homeless.name.toLowerCase(),
-        homeless.gender.toLowerCase(),
-        homeless.location.toLowerCase(),
-        homeless.nationality.toLowerCase()
-      ])
-          .expand((element) => element)
-          .toList();
-
-      final List<ExtractedResult<String>> extracted = extractAll(
-        query: searchQuery.toLowerCase(),
-        choices: allStringsToSearch,
-        cutoff: 70,
-      );
-
-      final similarStrings = extracted.map((e) => e.choice).toList();
-      filteredData = data
-          .where((element) =>
-      similarStrings.contains(element.name.toLowerCase()) ||
-          similarStrings.contains(element.gender.toLowerCase()) ||
-          similarStrings.contains(element.location.toLowerCase()) ||
-          similarStrings.contains(element.nationality.toLowerCase()))
-          .toList();
-    }
 
     return Scaffold(
-      appBar: const HomeAppBar(),
+      appBar:  HomeAppBar(searchController: _searchController),
       body: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(homelessControllerProvider);
@@ -92,9 +78,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               ListView.builder(
                 controller: _scrollController,
-                itemCount: filteredData.length + (homelessState.hasMore ? 1 : 0),
+                itemCount: data.length + (homelessState.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == filteredData.length) {
+                  if (index == data.length) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(8.0),
@@ -103,12 +89,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     );
                   }
 
-                  if (filteredData.isEmpty && !homelessState.hasMore) {
+                  if (data.isEmpty && !homelessState.hasMore) {
                     return const Center(
                       child: Text('No more homeless found.'),
                     );
                   }
-                  final homeless = filteredData[index];
+                  final homeless = data[index];
                   return HomelessListItem(
                     key: ValueKey(homeless.id),
                     homeless: homeless,

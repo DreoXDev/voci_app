@@ -4,7 +4,8 @@ import 'package:voci_app/features/homeless/presentation/providers.dart';
 
 class HomeAppBar extends ConsumerStatefulWidget
     implements PreferredSizeWidget {
-  const HomeAppBar({super.key});
+  final TextEditingController searchController;
+  const HomeAppBar({super.key, required this.searchController});
 
   @override
   ConsumerState<HomeAppBar> createState() => _HomeAppBarState();
@@ -14,7 +15,6 @@ class HomeAppBar extends ConsumerStatefulWidget
 }
 
 class _HomeAppBarState extends ConsumerState<HomeAppBar> {
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -23,7 +23,6 @@ class _HomeAppBarState extends ConsumerState<HomeAppBar> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -40,7 +39,7 @@ class _HomeAppBarState extends ConsumerState<HomeAppBar> {
       title: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: SearchBar(
-          controller: _searchController,
+          controller: widget.searchController,
           hintText: 'Search',
           leading: const Icon(Icons.search),
           elevation: WidgetStateProperty.all(0),
