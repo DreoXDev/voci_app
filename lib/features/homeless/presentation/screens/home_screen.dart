@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:fuzzywuzzy/model/extracted_result.dart';
 import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
-import 'package:voci_app/features/homeless/presentation/controllers/homeless_controller.dart';
 import 'package:voci_app/features/homeless/presentation/providers.dart';
 import 'package:voci_app/features/homeless/presentation/widgets/home_app_bar.dart';
 import 'package:voci_app/features/homeless/presentation/widgets/homeless_list_item.dart';

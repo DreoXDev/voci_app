@@ -13,13 +13,11 @@ final homelessControllerProvider = StateNotifierProvider<HomelessController, Hom
 
 // 4. Create the query
 final searchQueryProvider = StateProvider<String>((ref) {
-  print('providers: searchQueryProvider is being evaluated');
   return '';
 });
 
 // 5. Filter the list using the query
 final filteredHomelessListProvider = FutureProvider<List<HomelessEntity>>((ref) async {
-  print('providers: filteredHomelessListProvider is being evaluated');
   final searchQuery = ref.watch(searchQueryProvider);
   //This was changed because the controller has the data, it will be listened there
   final homelessList = ref.watch(homelessControllerProvider).data;
