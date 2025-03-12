@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
-import 'package:voci_app/features/requests/data/models/request.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/widgets/custom_chip.dart';
-import 'package:voci_app/features/homeless/presentation/providers.dart';
+import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 
-import '../../../homeless/data/providers.dart';// <-- Added!
+import '../../../../core/widgets/custom_chip.dart';
+import '../../../homeless/data/providers.dart'; // <-- Added!
 
 class RequestListItem extends ConsumerWidget {
   final RequestEntity request;
   final VoidCallback onChipClick;
   final VoidCallback onClick;
   final bool showPreferredIcon;
+
   const RequestListItem({
     super.key,
     required this.request,
@@ -46,7 +45,7 @@ class RequestListItem extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    getIcon(request.iconCategory),
+                    _getIcon(request.iconCategory), // <-- Changed!
                     color: Theme.of(context).colorScheme.onPrimary,
                     size: 24,
                   ),
@@ -77,8 +76,13 @@ class RequestListItem extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(request.timestamp)),
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            DateFormat('dd/MM/yyyy').format(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    request.timestamp)),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
@@ -88,7 +92,8 @@ class RequestListItem extends ConsumerWidget {
                       Text(
                         request.description,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            color:
+                            Theme.of(context).colorScheme.onSurfaceVariant),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -109,13 +114,22 @@ class RequestListItem extends ConsumerWidget {
     );
   }
 
-  IconData getIcon(IconCategory iconCategory) {
+  IconData _getIcon(String iconCategory) {
     switch (iconCategory) {
-      case IconCategory.OTHER:
-        return Icons.category; // Default icon, you should change it to the actual one
-    // Add other categories and icons here if needed
+      case "other":
+        return Icons.category;
+      case "shoes":
+        return Icons.checkroom_outlined;
+      case "pants":
+        return Icons.checkroom_outlined;
+      case "shirt":
+        return Icons.checkroom_outlined;
+      case "cap":
+        return Icons.checkroom_outlined;
+      case "underwear":
+        return Icons.checkroom_outlined;
       default:
-        return Icons.category; // Default color
+        return Icons.category;
     }
   }
 }

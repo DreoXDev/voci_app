@@ -1,14 +1,16 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:voci_app/features/homeless/data/models/homeless.dart';
+
 class StatusLED extends StatefulWidget {
-  final String status;
+  final HomelessStatus status; // <-- Changed!
   final bool isPulsating;
   final double size;
 
   const StatusLED({
     super.key,
-    required this.status,
+    required this.status, // <-- Changed!
     this.isPulsating = true,
     this.size = 16.0,
   });
@@ -26,7 +28,8 @@ class StatusLEDState extends State<StatusLED>
   @override
   void initState() {
     super.initState();
-    animationTime = Random().nextInt(500) + 1000; // Random duration between 1 and 1.5 seconds
+    animationTime = Random().nextInt(500) +
+        1000; // Random duration between 1 and 1.5 seconds
     _controller = AnimationController(
       duration: Duration(milliseconds: animationTime),
       vsync: this,
@@ -42,14 +45,14 @@ class StatusLEDState extends State<StatusLED>
   }
 
   Color getColor() {
-    switch (widget.status) {
-      case "GREEN":
+    switch (widget.status) { // <-- Changed!
+      case HomelessStatus.green: // <-- Changed!
         return Colors.green;
-      case "YELLOW":
+      case HomelessStatus.yellow: // <-- Changed!
         return Colors.yellow;
-      case "RED":
+      case HomelessStatus.red: // <-- Changed!
         return Colors.red;
-      case "GRAY":
+      case HomelessStatus.gray: // <-- Changed!
       default:
         return Colors.grey;
     }

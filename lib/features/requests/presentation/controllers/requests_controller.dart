@@ -22,9 +22,8 @@ class RequestsController extends StateNotifier<RequestsState> {
       print('getActiveRequestsList: Getting requests data');
       final (requestsList, newLastDocument) = await _getActiveRequests(
           GetActiveRequestsParams(lastDocument: state.lastDocument));
-      DocumentSnapshot? lastDocument =
-      await _getActiveRequests.repository.getLastVisibleDocument(
-          lastDocument: state.lastDocument);
+      DocumentSnapshot? lastDocument = await _getActiveRequests.repository
+          .getLastVisibleDocument(lastDocument: state.lastDocument);
       _updateState(requestsList, newLastDocument ?? lastDocument);
       //fetch the names of the homelesses
       await getHomelessNames(requestsList);
@@ -61,7 +60,7 @@ class RequestsController extends StateNotifier<RequestsState> {
         // Fetch the homeless names for the IDs
         await _getHomelessNames(
             GetHomelessNamesParams(homelessIds: homelessIds));
-      } catch (e, stacktrace) {
+      } catch (e) {
         print('getHomelessNames: Error fetching names - $e');
       }
     }
@@ -84,11 +83,11 @@ class RequestsState {
   });
 
   factory RequestsState.initial() => RequestsState(
-    data: [],
-    lastDocument: null,
-    isLoading: false,
-    hasMore: true,
-  );
+        data: [],
+        lastDocument: null,
+        isLoading: false,
+        hasMore: true,
+      );
 
   RequestsState copyWith({
     List<RequestEntity>? data,

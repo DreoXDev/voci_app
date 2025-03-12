@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
 import 'package:voci_app/core/widgets/custom_chip.dart';
 import 'package:voci_app/core/widgets/status_led.dart';
+import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
+import 'package:voci_app/features/homeless/data/models/homeless.dart';
 
 class HomelessListItem extends StatefulWidget {
   final HomelessEntity homeless;
@@ -49,7 +50,10 @@ class HomelessListItemState extends State<HomelessListItem> {
               Flexible(
                 child: Row(
                   children: [
-                    StatusLED(status: widget.homeless.status, size: 24.0,),
+                    StatusLED(
+                      status: _statusFromString(widget.homeless.status), // <-- Changed!
+                      size: 24.0,
+                    ),
                     const SizedBox(width: 8.0),
                     Flexible(
                       child: Column(
@@ -68,7 +72,7 @@ class HomelessListItemState extends State<HomelessListItem> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            "${widget.homeless.gender}, ${widget.homeless.age}, ${widget.homeless.nationality}",
+                            "${_capitalize(widget.homeless.gender)}, ${widget.homeless.age}, ${widget.homeless.nationality}", // <-- Changed!
                             style: Theme.of(context)
                                 .textTheme
                                 .labelSmall
@@ -76,7 +80,7 @@ class HomelessListItemState extends State<HomelessListItem> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -117,5 +121,24 @@ class HomelessListItemState extends State<HomelessListItem> {
         ),
       ),
     );
+  }
+  HomelessStatus _statusFromString(String statusString) {
+    switch (statusString.toLowerCase()) {
+      case 'red':
+        return HomelessStatus.red;
+      case 'yellow':
+        return HomelessStatus.yellow;
+      case 'green':
+        return HomelessStatus.green;
+      default:
+        return HomelessStatus.gray;
+    }
+  }
+
+  String _capitalize(String text) {
+    if (text.isEmpty) {
+      return text;
+    }
+    return text[0].toUpperCase() + text.substring(1);
   }
 }

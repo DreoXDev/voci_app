@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:voci_app/core/widgets/custom_chip.dart';
-import 'package:voci_app/features/homeless/presentation/providers.dart';
-import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:voci_app/core/widgets/custom_chip.dart';
+import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 
 import '../../../homeless/data/providers.dart';
 
@@ -35,7 +34,8 @@ class RequestDetailDrawer extends ConsumerWidget {
               children: [
                 // Date
                 Text(
-                  DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(request.timestamp)),
+                  DateFormat('dd/MM/yyyy').format(
+                      DateTime.fromMillisecondsSinceEpoch(request.timestamp)),
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 // Close Button

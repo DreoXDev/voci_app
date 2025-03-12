@@ -16,26 +16,31 @@ class RequestsFirestoreDatasource {
   static const String _doneStatus = 'DONE';
 
   // Get Active (TO DO) Requests
-  Future<(List<Request>, DocumentSnapshot?)> getActiveRequests({DocumentSnapshot? lastDocument}) async {
-    return _getRequestsByStatus(status: _todoStatus, lastDocument: lastDocument);
+  Future<(List<Request>, DocumentSnapshot?)> getActiveRequests(
+      {DocumentSnapshot? lastDocument}) async {
+    return _getRequestsByStatus(
+        status: _todoStatus, lastDocument: lastDocument);
   }
 
   // Get Completed (DONE) Requests
-  Future<(List<Request>, DocumentSnapshot?)> getCompletedRequests({DocumentSnapshot? lastDocument}) async {
-    return _getRequestsByStatus(status: _doneStatus, lastDocument: lastDocument);
+  Future<(List<Request>, DocumentSnapshot?)> getCompletedRequests(
+      {DocumentSnapshot? lastDocument}) async {
+    return _getRequestsByStatus(
+        status: _doneStatus, lastDocument: lastDocument);
   }
 
   // Generic method to get requests by status
   Future<(List<Request>, DocumentSnapshot?)> _getRequestsByStatus(
       {required String status, DocumentSnapshot? lastDocument}) async {
-    print('getRequestsByStatus: Started, status: $status, lastDocument: $lastDocument');
+    print(
+        'getRequestsByStatus: Started, status: $status, lastDocument: $lastDocument');
 
     Query<Request> query = _firestore
         .collection(_collectionName)
         .withConverter(
-      fromFirestore: Request.fromFirestore,
-      toFirestore: (Request request, _) => request.toMap(),
-    )
+          fromFirestore: Request.fromFirestore,
+          toFirestore: (Request request, _) => request.toMap(),
+        )
         .where('status', isEqualTo: status) // Filter by status
         .orderBy('timestamp', descending: true) //Order by the most recient one
         .limit(_batchSize);
@@ -49,17 +54,19 @@ class RequestsFirestoreDatasource {
 
     print('getRequestsByStatus: Getting querySnapshot');
     final querySnapshot = await query.get();
-    print('getRequestsByStatus: Got querySnapshot with ${querySnapshot.docs.length} documents');
+    print(
+        'getRequestsByStatus: Got querySnapshot with ${querySnapshot.docs.length} documents');
 
     print('getRequestsByStatus: Mapping documents to Request objects');
     final requestsList = querySnapshot.docs.map((doc) => doc.data()).toList();
-    print('getRequestsByStatus: Mapped documents, found ${requestsList.length} Request objects');
+    print(
+        'getRequestsByStatus: Mapped documents, found ${requestsList.length} Request objects');
 
     DocumentSnapshot? newLastDocument;
-    if(requestsList.isNotEmpty){
+    if (requestsList.isNotEmpty) {
       print('getRequestsByStatus: Setting newLastDocument to last document');
       newLastDocument = querySnapshot.docs.last;
-    }else {
+    } else {
       print('getRequestsByStatus: List is empty, newLastDocument will be null');
     }
     print('getRequestsByStatus: Returning results');
@@ -67,14 +74,16 @@ class RequestsFirestoreDatasource {
     return (requestsList, newLastDocument);
   }
 
-  Future<DocumentSnapshot?> getLastVisibleDocument({String status = _todoStatus, DocumentSnapshot? lastDocument}) async {
+  Future<DocumentSnapshot?> getLastVisibleDocument(
+      {String status = _todoStatus, DocumentSnapshot? lastDocument}) async {
     print('getLastVisibleDocument: Started');
     Query<Request> query = _firestore
         .collection(_collectionName)
         .withConverter(
-      fromFirestore: Request.fromFirestore,
-      toFirestore: (Request request, _) => request.toMap(),
-    ).where('status', isEqualTo: status)
+          fromFirestore: Request.fromFirestore,
+          toFirestore: (Request request, _) => request.toMap(),
+        )
+        .where('status', isEqualTo: status)
         .orderBy('timestamp', descending: true)
         .limit(_batchSize);
     print('getLastVisibleDocument: Base query created');
@@ -84,7 +93,8 @@ class RequestsFirestoreDatasource {
     }
     print('getLastVisibleDocument: Getting querySnapshot');
     final querySnapshot = await query.get();
-    print('getLastVisibleDocument: Got querySnapshot with ${querySnapshot.docs.length} documents');
+    print(
+        'getLastVisibleDocument: Got querySnapshot with ${querySnapshot.docs.length} documents');
     if (querySnapshot.docs.isNotEmpty) {
       print('getLastVisibleDocument: Returning last document');
       return querySnapshot.docs.last;

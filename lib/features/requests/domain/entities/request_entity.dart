@@ -1,14 +1,15 @@
 import 'package:voci_app/features/requests/data/models/request.dart';
+
 class RequestEntity {
   String id;
   String? creatorId;
   String homelessID;
   String title;
   String description;
-  RequestStatus status;
+  String status;
   int timestamp;
-  IconCategory iconCategory;
-  Area area;
+  String iconCategory;
+  String area;
 
   RequestEntity({
     required this.id,
@@ -22,6 +23,7 @@ class RequestEntity {
     required this.area,
   });
 }
+
 extension RequestToEntity on Request {
   RequestEntity toEntity() {
     return RequestEntity(
@@ -30,9 +32,9 @@ extension RequestToEntity on Request {
         homelessID: homelessID,
         title: title,
         description: description,
-        status: status,
+        status: status.name,
         timestamp: timestamp,
-        iconCategory: iconCategory,
-        area: area);
+        iconCategory: iconCategory.name,
+        area: area.name);
   }
 }

@@ -6,4 +6,5 @@ import 'package:voci_app/core/routes/app_router.dart';
 final routerProvider = appRouterProvider;
 
 // Firestore instance provider
-final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firestoreProvider =
+    Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);

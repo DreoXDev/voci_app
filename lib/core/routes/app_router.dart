@@ -1,13 +1,14 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:voci_app/features/homeless/presentation/screens/home_screen.dart';
 import 'package:voci_app/core/widgets/main_scaffold.dart';
+import 'package:voci_app/features/homeless/presentation/screens/home_screen.dart';
+
+import '../../features/homeless/presentation/screens/homeless_profile_screen.dart';
 import '../../features/requests/presentation/screens/requests_screen.dart';
-import 'package:animations/animations.dart';
 
 // Define a global key that will be used for the navigator
-final GlobalKey<NavigatorState> _rootNavigatorKey =
-GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -29,7 +30,6 @@ final appRouterProvider = GoRouter(
                 Animation<double> secondaryAnimation,
                 Widget child) {
               //is going backward
-              final isGoingBackward = state.matchedLocation == "/requests";
               return SharedAxisTransition(
                 animation: animation,
                 secondaryAnimation: secondaryAnimation,
@@ -50,7 +50,6 @@ final appRouterProvider = GoRouter(
                 Animation<double> secondaryAnimation,
                 Widget child) {
               //is going backward
-              final isGoingBackward = state.matchedLocation == "/homeless";
               return SharedAxisTransition(
                 animation: animation,
                 secondaryAnimation: secondaryAnimation,
@@ -60,6 +59,13 @@ final appRouterProvider = GoRouter(
               );
             },
           ),
+        ),
+        GoRoute(
+          path: '/homeless/:homelessId',
+          builder: (context, state) {
+            final homelessId = state.pathParameters['homelessId']!;
+            return HomelessProfileScreen(homelessId: homelessId);
+          },
         ),
       ],
     ),

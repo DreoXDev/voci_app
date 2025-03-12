@@ -1,13 +1,13 @@
 class HomelessEntity {
   final String id;
   final String age;
-  final String area;
   final String description;
-  final String gender;
   final String location;
   final String name;
   final String nationality;
   final String pets;
+  final String area;
+  final String gender;
   final String status;
 
   HomelessEntity({

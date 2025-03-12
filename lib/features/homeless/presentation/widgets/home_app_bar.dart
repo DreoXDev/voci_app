@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/homeless/presentation/providers.dart';
 
-class HomeAppBar extends ConsumerStatefulWidget
-    implements PreferredSizeWidget {
+class HomeAppBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   final TextEditingController searchController;
+
   const HomeAppBar({super.key, required this.searchController});
 
   @override
@@ -15,7 +15,6 @@ class HomeAppBar extends ConsumerStatefulWidget
 }
 
 class _HomeAppBarState extends ConsumerState<HomeAppBar> {
-
   @override
   void initState() {
     super.initState();

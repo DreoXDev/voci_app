@@ -1,18 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum RequestStatus {
-  TODO,
-  DONE,
+  todo,
+  done,
 }
 
-enum IconCategory {
-  OTHER,
-  // You can add more categories here
+enum RequestIconCategory {
+  shoes("Scarpe"),
+  pants("Pantaloni"),
+  shirt("Maglietta"),
+  cap("Cappello"),
+  underwear("Intimo"),
+  other("Altro");
+
+  final String displayName;
+  const RequestIconCategory(this.displayName);
 }
 
-enum Area {
-  OVEST,
-  // Add more area types here if needed.
+enum RequestArea {
+  ovest,
+  est,
+  sud,
 }
 
 class Request {
@@ -23,8 +31,8 @@ class Request {
   String description;
   RequestStatus status;
   int timestamp;
-  IconCategory iconCategory;
-  Area area;
+  RequestIconCategory iconCategory;
+  RequestArea area;
 
   Request({
     required this.id,
@@ -63,31 +71,34 @@ class Request {
       'homelessID': homelessID,
       'title': title,
       'description': description,
-      'status': status.name,
+      'status': status.name.toUpperCase(),
       'timestamp': timestamp,
-      'iconCategory': iconCategory.name,
-      'area': area.name,
+      'iconCategory': iconCategory.name.toUpperCase(),
+      'area': area.name.toUpperCase(),
     };
   }
+
   static RequestStatus _parseStatus(String? statusString) {
-    if (statusString == null) return RequestStatus.TODO; // Default value
+    if (statusString == null) return RequestStatus.todo; // Default value
     return RequestStatus.values.firstWhere(
-          (e) => e.name == statusString,
-      orElse: () => RequestStatus.TODO, // Default if not found
+          (e) => e.name.toUpperCase() == statusString,
+      orElse: () => RequestStatus.todo, // Default if not found
     );
   }
-  static IconCategory _parseIconCategory(String? statusString) {
-    if (statusString == null) return IconCategory.OTHER; // Default value
-    return IconCategory.values.firstWhere(
-          (e) => e.name == statusString,
-      orElse: () => IconCategory.OTHER, // Default if not found
+
+  static RequestIconCategory _parseIconCategory(String? categoryString) {
+    if (categoryString == null) return RequestIconCategory.other; // Default value
+    return RequestIconCategory.values.firstWhere(
+          (e) => e.name.toUpperCase() == categoryString,
+      orElse: () => RequestIconCategory.other, // Default if not found
     );
   }
-  static Area _parseArea(String? statusString) {
-    if (statusString == null) return Area.OVEST; // Default value
-    return Area.values.firstWhere(
-          (e) => e.name == statusString,
-      orElse: () => Area.OVEST, // Default if not found
+
+  static RequestArea _parseArea(String? areaString) {
+    if (areaString == null) return RequestArea.ovest; // Default value
+    return RequestArea.values.firstWhere(
+          (e) => e.name.toUpperCase() == areaString,
+      orElse: () => RequestArea.ovest, // Default if not found
     );
   }
 }

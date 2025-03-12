@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/providers.dart';
-import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
+import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
 
 class RequestsScreen extends ConsumerStatefulWidget {
   const RequestsScreen({super.key});
@@ -15,12 +15,13 @@ class RequestsScreen extends ConsumerStatefulWidget {
 class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   final _scrollController = ScrollController();
   bool _isLoadingMore = false; // <-- Added!
-  bool _isFirstLoadDone = false;// <-- Added!
+  bool _isFirstLoadDone = false; // <-- Added!
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(requestsControllerProvider.notifier).getActiveRequestsList());
+    Future.microtask(() =>
+        ref.read(requestsControllerProvider.notifier).getActiveRequestsList());
     _scrollController.addListener(_onScroll);
   }
 
@@ -36,7 +37,10 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     final requestsState = ref.read(requestsControllerProvider);
     if (_isBottom && requestsState.hasMore && !_isLoadingMore) {
       _isLoadingMore = true;
-      ref.read(requestsControllerProvider.notifier).getActiveRequestsList().then((_) => _isLoadingMore = false);
+      ref
+          .read(requestsControllerProvider.notifier)
+          .getActiveRequestsList()
+          .then((_) => _isLoadingMore = false);
     }
   }
 
@@ -47,7 +51,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     return currentScroll >= (maxScroll * 0.9);
   }
 
-  void _doSomethingWithRequest(RequestEntity request){
+  void _doSomethingWithRequest(RequestEntity request) {
     print("Do something with ${request.title}");
   }
 
@@ -99,7 +103,9 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
       body: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(requestsControllerProvider);
-            ref.read(requestsControllerProvider.notifier).getActiveRequestsList();
+            ref
+                .read(requestsControllerProvider.notifier)
+                .getActiveRequestsList();
           },
           child: Stack(
             children: [
@@ -130,7 +136,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                       confirmDismiss: (direction) async {
                         return false;
                       },
-                      onDismissed: (direction){
+                      onDismissed: (direction) {
                         _doSomethingWithRequest(request);
                       },
                       background: Container(
@@ -164,8 +170,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                   ),
                 )
             ],
-          )
-      ),
+          )),
     );
   }
 }

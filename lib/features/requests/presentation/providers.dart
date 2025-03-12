@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/requests/data/providers.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_active_requests.dart';
-import 'package:voci_app/features/requests/presentation/controllers/requests_controller.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
+import 'package:voci_app/features/requests/presentation/controllers/requests_controller.dart';
 
 final getActiveRequestsProvider = Provider<GetActiveRequests>((ref) {
   final requestRepository = ref.watch(requestRepositoryProvider);
@@ -13,8 +13,9 @@ final getHomelessNamesProvider = Provider<GetHomelessNames>((ref) {
   return GetHomelessNames(homelessRepository);
 });
 
-final requestsControllerProvider = StateNotifierProvider<RequestsController, RequestsState>(
-      (ref) => RequestsController(
+final requestsControllerProvider =
+    StateNotifierProvider<RequestsController, RequestsState>(
+  (ref) => RequestsController(
     ref.watch(getActiveRequestsProvider),
     ref.watch(getHomelessNamesProvider),
   ),

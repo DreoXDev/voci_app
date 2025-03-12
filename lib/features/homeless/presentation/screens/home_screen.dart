@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/homeless/domain/entities/homeless_entity.dart';
 import 'package:voci_app/features/homeless/presentation/providers.dart';
+import 'package:voci_app/features/homeless/presentation/screens/homeless_profile_screen.dart'; // <-- Added!
 import 'package:voci_app/features/homeless/presentation/widgets/home_app_bar.dart';
 import 'package:voci_app/features/homeless/presentation/widgets/homeless_list_item.dart';
 
@@ -19,7 +20,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(homelessControllerProvider.notifier).getHomelessList());
+    Future.microtask(
+        () => ref.read(homelessControllerProvider.notifier).getHomelessList());
     _scrollController.addListener(_onScroll);
     _searchController.addListener(_onSearch);
   }
@@ -38,9 +40,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _onScroll() {
     if (_isBottom) {
       final homelessController = ref.read(homelessControllerProvider.notifier);
-      if(homelessController.getIsSearching()){
-        homelessController.searchHomelessList(searchQuery: _searchController.text);
-      }else{
+      if (homelessController.getIsSearching()) {
+        homelessController.searchHomelessList(
+            searchQuery: _searchController.text);
+      } else {
         homelessController.getHomelessList();
       }
     }
@@ -52,8 +55,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentScroll = _scrollController.offset;
     return currentScroll >= (maxScroll * 0.9);
   }
-  void _onSearch(){
-    ref.read(homelessControllerProvider.notifier).searchHomelessList(searchQuery: _searchController.text);
+
+  void _onSearch() {
+    ref
+        .read(homelessControllerProvider.notifier)
+        .searchHomelessList(searchQuery: _searchController.text);
     if (_searchController.text.isEmpty) {
       ref.read(searchQueryProvider.notifier).state = "";
     } else {
@@ -62,11 +68,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   //This is an example function, you need to update the database and all that stuff
-  void _doSomethingWithHomeless(HomelessEntity homeless){
+  void _doSomethingWithHomeless(HomelessEntity homeless) {
     //Here update the database
     //Here do something with the data
     print("Do something with ${homeless.name}");
   }
+
   // Placeholder function for the FAB action
   void _addHomeless() {
     // Implement the logic to add a new homeless person here.
@@ -76,11 +83,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final homelessState = ref.watch(homelessControllerProvider);
-    final String searchQuery = ref.watch(searchQueryProvider);
+    ref.watch(searchQueryProvider);
     final List<HomelessEntity> data = homelessState.data;
 
     return Scaffold(
-      appBar:  HomeAppBar(searchController: _searchController),
+      appBar: HomeAppBar(searchController: _searchController),
       floatingActionButton: FloatingActionButton(
         onPressed: _addHomeless,
         tooltip: 'Add Homeless',
@@ -119,10 +126,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       key: ValueKey(homeless.id),
                       direction: DismissDirection.startToEnd,
                       confirmDismiss: (direction) async {
-                        // Always return false so the item is not removed.
                         return false;
                       },
-                      onDismissed: (direction){
+                      onDismissed: (direction) {
                         _doSomethingWithHomeless(homeless);
                       },
                       background: Container(
@@ -136,7 +142,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         homeless: homeless,
                         showPreferredIcon: true,
                         onChipClick: () {},
-                        onClick: () {},
+                        onClick: () {
+                          // <-- Corrected!
+                          Navigator.of(context).push(
+                            // <-- Corrected!
+                            MaterialPageRoute(
+                              // <-- Corrected!
+                              builder: (context) => HomelessProfileScreen(
+                                  homelessId: homeless.id), // <-- Corrected!
+                            ), // <-- Corrected!
+                          ); // <-- Corrected!
+                        }, // <-- Corrected!
                       ),
                     ),
                   );
@@ -156,8 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 )
             ],
-          )
-      ),
+          )),
     );
   }
 }

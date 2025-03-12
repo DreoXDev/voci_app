@@ -5,7 +5,8 @@ class CustomChip extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const CustomChip({super.key, required this.text, required this.icon, required this.onTap});
+  const CustomChip(
+      {super.key, required this.text, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

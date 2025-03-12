@@ -9,19 +9,31 @@ class RequestRepositoryImpl implements RequestRepository {
   RequestRepositoryImpl(this._requestsFirestoreDatasource);
 
   @override
-  Future<(List<RequestEntity>, DocumentSnapshot?)> getActiveRequests({DocumentSnapshot? lastDocument}) async {
-    final (requestsList, newLastDocument) = await _requestsFirestoreDatasource.getActiveRequests(lastDocument: lastDocument);
-    return (requestsList.map((request) => request.toEntity()).toList(), newLastDocument);
+  Future<(List<RequestEntity>, DocumentSnapshot?)> getActiveRequests(
+      {DocumentSnapshot? lastDocument}) async {
+    final (requestsList, newLastDocument) = await _requestsFirestoreDatasource
+        .getActiveRequests(lastDocument: lastDocument);
+    return (
+      requestsList.map((request) => request.toEntity()).toList(),
+      newLastDocument
+    );
   }
 
   @override
-  Future<(List<RequestEntity>, DocumentSnapshot?)> getCompletedRequests({DocumentSnapshot? lastDocument}) async {
-    final (requestsList, newLastDocument) = await _requestsFirestoreDatasource.getCompletedRequests(lastDocument: lastDocument);
-    return (requestsList.map((request) => request.toEntity()).toList(), newLastDocument);
+  Future<(List<RequestEntity>, DocumentSnapshot?)> getCompletedRequests(
+      {DocumentSnapshot? lastDocument}) async {
+    final (requestsList, newLastDocument) = await _requestsFirestoreDatasource
+        .getCompletedRequests(lastDocument: lastDocument);
+    return (
+      requestsList.map((request) => request.toEntity()).toList(),
+      newLastDocument
+    );
   }
 
   @override
-  Future<DocumentSnapshot?> getLastVisibleDocument({String status = 'TODO', DocumentSnapshot? lastDocument}) async {
-    return await _requestsFirestoreDatasource.getLastVisibleDocument(status: status, lastDocument: lastDocument);
+  Future<DocumentSnapshot?> getLastVisibleDocument(
+      {String status = 'TODO', DocumentSnapshot? lastDocument}) async {
+    return await _requestsFirestoreDatasource.getLastVisibleDocument(
+        status: status, lastDocument: lastDocument);
   }
 }

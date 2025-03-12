@@ -14,11 +14,18 @@ final searchHomelessProvider = Provider<SearchHomeless>((ref) {
   return SearchHomeless(homelessRepository);
 });
 
-final homelessControllerProvider = StateNotifierProvider<HomelessController, HomelessState>(
-      (ref) => HomelessController(
-      ref.watch(getHomelessProvider),
-      ref.watch(searchHomelessProvider)
-  ),
-);
+final homelessControllerProvider =
+    StateNotifierProvider<HomelessController, HomelessState>((ref) {
+  final homelessRepository = ref.watch(homelessRepositoryProvider);
+  final getHomeless = ref.watch(getHomelessProvider);
+  final searchHomeless = ref.watch(searchHomelessProvider);
+  return HomelessController(getHomeless, searchHomeless, homelessRepository);
+});
 
 final searchQueryProvider = StateProvider<String>((ref) => "");
+
+final getHomelessByIdControllerProvider =
+    FutureProvider.family<HomelessByIdState, String>((ref, homelessId) async {
+  final homelessController = ref.watch(homelessControllerProvider.notifier);
+  return homelessController.getHomelessById(homelessId: homelessId);
+});

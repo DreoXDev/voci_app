@@ -2,17 +2,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/entities/homeless_entity.dart';
 
+enum HomelessStatus {
+  red,
+  yellow,
+  green,
+  gray,
+}
+
+enum HomelessGender {
+  male,
+  female,
+  unspecified,
+}
+
+enum HomelessArea {
+  sud,
+  est,
+  ovest,
+}
+
 class Homeless {
   final String id;
   final String age;
-  final String area;
+  final HomelessArea area;
   final String description;
-  final String gender;
+  final HomelessGender gender;
   final String location;
   final String name;
   final String nationality;
   final String pets;
-  final String status;
+  final HomelessStatus status;
 
   Homeless({
     required this.id,
@@ -36,14 +55,14 @@ class Homeless {
     return Homeless(
       id: data?['id'] as String? ?? '',
       age: data?['age'] as String? ?? '',
-      area: data?['area'] as String? ?? '',
+      area: _areaFromString(data?['area'] as String? ?? 'SUD'),
       description: data?['description'] as String? ?? '',
-      gender: data?['gender'] as String? ?? '',
+      gender: _genderFromString(data?['gender'] as String? ?? 'Unspecified'),
       location: data?['location'] as String? ?? '',
       name: data?['name'] as String? ?? '',
       nationality: data?['nationality'] as String? ?? '',
       pets: data?['pets'] as String? ?? '',
-      status: data?['status'] as String? ?? '',
+      status: _statusFromString(data?['status'] as String? ?? 'GRAY'),
     );
   }
 
@@ -51,14 +70,14 @@ class Homeless {
     return {
       'id': id,
       'age': age,
-      'area': area,
+      'area': _areaToString(area),
       'description': description,
-      'gender': gender,
+      'gender': _genderToString(gender),
       'location': location,
       'name': name,
       'nationality': nationality,
       'pets': pets,
-      'status': status,
+      'status': _statusToString(status),
     };
   }
 
@@ -66,14 +85,61 @@ class Homeless {
     return HomelessEntity(
       id: id,
       age: age,
-      area: area,
+      area: _areaToString(area),
       description: description,
-      gender: gender,
+      gender: _genderToString(gender),
       location: location,
       name: name,
       nationality: nationality,
       pets: pets,
-      status: status,
+      status: _statusToString(status),
     );
+  }
+
+  static HomelessStatus _statusFromString(String statusString) {
+    switch (statusString) {
+      case 'RED':
+        return HomelessStatus.red;
+      case 'YELLOW':
+        return HomelessStatus.yellow;
+      case 'GREEN':
+        return HomelessStatus.green;
+      default:
+        return HomelessStatus.gray;
+    }
+  }
+
+  static String _statusToString(HomelessStatus status) {
+    return status.name.toUpperCase();
+  }
+
+  static HomelessGender _genderFromString(String genderString) {
+    switch (genderString) {
+      case 'Male':
+        return HomelessGender.male;
+      case 'Female':
+        return HomelessGender.female;
+      default:
+        return HomelessGender.unspecified;
+    }
+  }
+
+  static String _genderToString(HomelessGender gender) {
+    return gender.name;
+  }
+
+  static HomelessArea _areaFromString(String areaString) {
+    switch (areaString) {
+      case 'SUD':
+        return HomelessArea.sud;
+      case 'EST':
+        return HomelessArea.est;
+      default:
+        return HomelessArea.ovest;
+    }
+  }
+
+  static String _areaToString(HomelessArea area) {
+    return area.name.toUpperCase();
   }
 }
