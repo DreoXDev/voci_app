@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconify_flutter/iconify_flutter.dart';
+import 'package:iconify_flutter/icons/game_icons.dart';
+import 'package:iconify_flutter/icons/icon_park_twotone.dart';
+import 'package:iconify_flutter/icons/iconoir.dart';
+import 'package:iconify_flutter/icons/lucide.dart';
+import 'package:iconify_flutter/icons/material_symbols.dart';
+import 'package:iconify_flutter/icons/mingcute.dart';
+import 'package:iconify_flutter/icons/ph.dart';
+import 'package:iconify_flutter/icons/tabler.dart';
 import 'package:intl/intl.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
-
 import '../../../../core/widgets/custom_chip.dart';
-import '../../../homeless/data/providers.dart'; // <-- Added!
+import '../../../homeless/data/providers.dart';
 
 class RequestListItem extends ConsumerWidget {
   final RequestEntity request;
@@ -44,10 +52,8 @@ class RequestListItem extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    _getIcon(request.iconCategory), // <-- Changed!
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    size: 24,
+                  child: Center(
+                    child: _getIcon(request.iconCategory), // Return an Iconify widget
                   ),
                 ),
               ),
@@ -114,22 +120,23 @@ class RequestListItem extends ConsumerWidget {
     );
   }
 
-  IconData _getIcon(String iconCategory) {
+  Widget _getIcon(String iconCategory) {
+    //We now return the widget directly.
     switch (iconCategory) {
       case "other":
-        return Icons.category;
+        return const Iconify(MaterialSymbols.category, color: Colors.white,);
       case "shoes":
-        return Icons.checkroom_outlined;
+        return const Iconify(Tabler.shoe, color: Colors.white,);
       case "pants":
-        return Icons.checkroom_outlined;
+        return const Iconify(Iconoir.pants, color: Colors.white,);
       case "shirt":
-        return Icons.checkroom_outlined;
+        return const Iconify(Tabler.shirt, color: Colors.white,);
       case "cap":
-        return Icons.checkroom_outlined;
+        return const Iconify(IconParkTwotone.hat, color: Colors.white,);
       case "underwear":
-        return Icons.checkroom_outlined;
+        return const Iconify(GameIcons.underwear, color: Colors.white,);
       default:
-        return Icons.category;
+        return const Iconify(MaterialSymbols.category, color: Colors.white,);
     }
   }
 }

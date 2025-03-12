@@ -38,3 +38,39 @@ extension RequestToEntity on Request {
         area: area.name);
   }
 }
+extension RequestEntityToModel on RequestEntity {
+  Request toModel(){
+    return Request(
+        id: id,
+        creatorId: creatorId,
+        homelessID: homelessID,
+        title: title,
+        description: description,
+        status: _parseStatus(status),
+        timestamp: timestamp,
+        iconCategory: _parseIconCategory(iconCategory),
+        area: _parseArea(area)
+    );
+  }
+
+  RequestStatus _parseStatus(String statusString) {
+    return RequestStatus.values.firstWhere(
+          (e) => e.name.toUpperCase() == statusString.toUpperCase(),
+      orElse: () => RequestStatus.todo, // Default if not found
+    );
+  }
+
+  RequestIconCategory _parseIconCategory(String categoryString) {
+    return RequestIconCategory.values.firstWhere(
+          (e) => e.name.toUpperCase() == categoryString.toUpperCase(),
+      orElse: () => RequestIconCategory.other, // Default if not found
+    );
+  }
+
+  RequestArea _parseArea(String areaString) {
+    return RequestArea.values.firstWhere(
+          (e) => e.name.toUpperCase() == areaString.toUpperCase(),
+      orElse: () => RequestArea.ovest, // Default if not found
+    );
+  }
+}

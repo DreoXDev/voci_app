@@ -6,14 +6,21 @@ import 'package:voci_app/core/errors/firestore_errors.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_completed_requests.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
+import 'package:voci_app/features/requests/domain/usecases/delete_request.dart';
+import 'package:voci_app/features/requests/domain/usecases/activate_request.dart';
 
 class RequestsHistoryController extends StateNotifier<RequestsHistoryState> {
   final GetCompletedRequests _getCompletedRequests;
   final GetHomelessNames _getHomelessNames;
+  final DeleteRequest _deleteRequest;
+  final ActivateRequest _activateRequest;
 
   RequestsHistoryController(
-      this._getCompletedRequests, this._getHomelessNames)
-      : super(RequestsHistoryState.initial());
+      this._getCompletedRequests,
+      this._getHomelessNames,
+      this._deleteRequest,
+      this._activateRequest,
+      ) : super(RequestsHistoryState.initial());
 
   Future<void> getCompletedRequestsList() async {
     if (state.isLoading || !state.hasMore) {
@@ -24,7 +31,8 @@ class RequestsHistoryController extends StateNotifier<RequestsHistoryState> {
       final (requestsList, newLastDocument) = await _getCompletedRequests(
           GetCompletedRequestsParams(lastDocument: state.lastDocument));
       DocumentSnapshot? lastDocument = await _getCompletedRequests.repository
-          .getLastVisibleDocument(lastDocument: state.lastDocument, status: 'DONE');
+          .getLastVisibleDocument(
+          lastDocument: state.lastDocument, status: 'DONE');
       _updateState(requestsList, newLastDocument ?? lastDocument);
       //fetch the names of the homelesses
       await getHomelessNames(requestsList);
@@ -39,10 +47,12 @@ class RequestsHistoryController extends StateNotifier<RequestsHistoryState> {
           isLoading: false, error: AsyncError(error, stackTrace));
     }
   }
+
   Future<void> refreshCompletedRequestsList() async {
     _clearData(); // Reset pagination state
     await getCompletedRequestsList(); // Reload data
   }
+
   void _clearData() {
     state = state.copyWith(
       data: [],
@@ -86,6 +96,42 @@ class RequestsHistoryController extends StateNotifier<RequestsHistoryState> {
           print('Error fetching homeless names: $e');
         }
       }
+    }
+  }
+
+  Future<void> deleteRequest(String requestId) async {
+    try {
+      await _deleteRequest(DeleteRequestParams(requestId: requestId));
+      // Optionally: refresh the list after deletion
+      await refreshCompletedRequestsList();
+    } on FirestoreError catch (e) {
+      if (kDebugMode) {
+        print('Error deleting request: $e');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting request: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> activateRequest(String requestId) async {
+    try {
+      await _activateRequest(ActivateRequestParams(requestId: requestId));
+      // Optionally: refresh the list after activating
+      await refreshCompletedRequestsList();
+    } on FirestoreError catch (e) {
+      if (kDebugMode) {
+        print('Error activating request: $e');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error activating request: $e');
+      }
+      rethrow;
     }
   }
 }

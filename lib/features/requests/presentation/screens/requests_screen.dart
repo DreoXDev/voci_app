@@ -5,8 +5,9 @@ import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/providers.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
-
+import '../widgets/add_modify_dialog.dart';
 import '../widgets/request_app_bar.dart';
+import 'package:voci_app/features/requests/data/models/request.dart';
 
 class RequestsScreen extends ConsumerStatefulWidget {
   const RequestsScreen({super.key});
@@ -55,9 +56,38 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   }
 
   void _doSomethingWithRequest(RequestEntity request) {
+    //TODO: add a correct function
   }
 
   void _addRequest() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return AddModifyRequestDialog(
+          title: 'Add Request',
+          onSave: (Request newRequest) async {
+            try {
+              await ref.read(requestsControllerProvider.notifier).addRequest(newRequest.toEntity());
+              // Optionally show a success message
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Request added successfully')),
+                );
+              }
+            } catch (e) {
+              // Handle errors
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error adding request: $e')),
+                );
+              }
+            }
+          },
+        );
+      },
+    );
   }
 
   void _showRequestDetailDrawer(RequestEntity request) {

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
 import 'package:voci_app/core/errors/firestore_errors.dart';
 import 'package:voci_app/core/errors/core_errors.dart';
+import 'package:voci_app/features/requests/domain/repositories/request_repository.dart';
 
 class RequestsFirestoreDatasource {
   final FirebaseFirestore _firestore;
@@ -34,7 +35,6 @@ class RequestsFirestoreDatasource {
   // Generic method to get requests by status
   Future<(List<Request>, DocumentSnapshot?)> _getRequestsByStatus(
       {required String status, DocumentSnapshot? lastDocument}) async {
-
     Query<Request> query = _firestore
         .collection(_collectionName)
         .withConverter(
@@ -44,7 +44,6 @@ class RequestsFirestoreDatasource {
         .where('status', isEqualTo: status)
         .orderBy('timestamp', descending: true)
         .limit(_batchSize);
-
 
     if (lastDocument != null) {
       query = query.startAfterDocument(lastDocument);
@@ -57,7 +56,6 @@ class RequestsFirestoreDatasource {
       DocumentSnapshot? newLastDocument;
       if (requestsList.isNotEmpty) {
         newLastDocument = querySnapshot.docs.last;
-      } else {
       }
 
       return (requestsList, newLastDocument);
@@ -88,6 +86,62 @@ class RequestsFirestoreDatasource {
         return querySnapshot.docs.last;
       }
       return null;
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
+    }
+  }
+  Future<String> addRequest({required Request request}) async {
+    try {
+      final DocumentReference<Request> docRef = await _firestore
+          .collection(_collectionName)
+          .withConverter(
+        fromFirestore: Request.fromFirestore,
+        toFirestore: (Request request, _) => request.toMap(),
+      )
+          .add(request);
+      return docRef.id;
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
+    }
+  }
+
+  Future<void> modifyRequest(
+      {required String requestId,
+        required Map<String, dynamic> updates}) async {
+    try {
+      await _firestore
+          .collection(_collectionName)
+          .doc(requestId)
+          .update(updates);
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteRequest({required String requestId}) async {
+    try {
+      await _firestore.collection(_collectionName).doc(requestId).delete();
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateRequestStatus(
+      {required String requestId, required RequestStatus status}) async {
+    try {
+      final String statusString = status == RequestStatus.todo ? _todoStatus : _doneStatus;
+      await _firestore
+          .collection(_collectionName)
+          .doc(requestId)
+          .update({'status': statusString});
     } on FirebaseException catch (e) {
       throw FirestoreError(message: 'Firebase exception: ${e.message}');
     } catch (e) {

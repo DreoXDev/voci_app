@@ -21,6 +21,7 @@ final requestRepositoryProvider = Provider<RequestRepository>(
     ref.watch(requestsFirestoreDatasourceProvider),
   ),
 );
+
 // Repository provider for the homeless
 final requestsHomelessRepositoryProvider = Provider<HomelessRepository>(
     (ref) => ref.watch(homelessRepositoryProvider));

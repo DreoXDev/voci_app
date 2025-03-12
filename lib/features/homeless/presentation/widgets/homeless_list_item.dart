@@ -51,7 +51,7 @@ class HomelessListItemState extends State<HomelessListItem> {
                 child: Row(
                   children: [
                     StatusLED(
-                      status: _statusFromString(widget.homeless.status), // <-- Changed!
+                      status: _statusFromString(widget.homeless.status),
                       size: 24.0,
                     ),
                     const SizedBox(width: 8.0),
@@ -72,7 +72,7 @@ class HomelessListItemState extends State<HomelessListItem> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            "${_capitalize(widget.homeless.gender)}, ${widget.homeless.age}, ${widget.homeless.nationality}", // <-- Changed!
+                            "${_capitalize(widget.homeless.area)}, ${widget.homeless.age}, ${widget.homeless.nationality}",
                             style: Theme.of(context)
                                 .textTheme
                                 .labelSmall

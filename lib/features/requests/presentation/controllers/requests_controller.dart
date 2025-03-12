@@ -6,13 +6,24 @@ import 'package:voci_app/core/errors/firestore_errors.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_active_requests.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
+import 'package:voci_app/features/requests/domain/usecases/add_request.dart';
+import 'package:voci_app/features/requests/domain/usecases/modify_request.dart';
+import 'package:voci_app/features/requests/domain/usecases/complete_request.dart';
 
 class RequestsController extends StateNotifier<RequestsState> {
   final GetActiveRequests _getActiveRequests;
   final GetHomelessNames _getHomelessNames;
+  final AddRequest _addRequest;
+  final ModifyRequest _modifyRequest;
+  final CompleteRequest _completeRequest;
 
-  RequestsController(this._getActiveRequests, this._getHomelessNames)
-      : super(RequestsState.initial());
+  RequestsController(
+      this._getActiveRequests,
+      this._getHomelessNames,
+      this._addRequest,
+      this._modifyRequest,
+      this._completeRequest,
+      ) : super(RequestsState.initial());
 
   Future<void> getActiveRequestsList() async {
     if (state.isLoading || !state.hasMore) {
@@ -73,6 +84,55 @@ class RequestsController extends StateNotifier<RequestsState> {
           print('Error fetching homeless names: $e');
         }
       }
+    }
+  }
+
+  Future<String> addRequest(RequestEntity request) async {
+    try {
+      final String requestId = await _addRequest(AddRequestParams(request: request));
+      return requestId;
+    } on FirestoreError catch (e) {
+      if (kDebugMode) {
+        print('Error adding request: $e');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding request: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> modifyRequest(String requestId, Map<String, dynamic> updates) async {
+    try {
+      await _modifyRequest(ModifyRequestParams(requestId: requestId, updates: updates));
+    } on FirestoreError catch (e) {
+      if (kDebugMode) {
+        print('Error modifying request: $e');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error modifying request: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> completeRequest(String requestId) async {
+    try {
+      await _completeRequest(CompleteRequestParams(requestId: requestId));
+    } on FirestoreError catch (e) {
+      if (kDebugMode) {
+        print('Error completing request: $e');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error completing request: $e');
+      }
+      rethrow;
     }
   }
 }
