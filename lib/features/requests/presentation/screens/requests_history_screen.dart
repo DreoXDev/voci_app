@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
-import 'package:voci_app/features/requests/presentation/providers.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
 
-import '../widgets/request_app_bar.dart';
+import '../providers.dart';
 
-class RequestsScreen extends ConsumerStatefulWidget {
-  const RequestsScreen({super.key});
+class RequestsHistoryScreen extends ConsumerStatefulWidget {
+  const RequestsHistoryScreen({super.key});
 
   @override
-  ConsumerState<RequestsScreen> createState() => _RequestsScreenState();
+  ConsumerState<RequestsHistoryScreen> createState() =>
+      _RequestsHistoryScreenState();
 }
 
-class _RequestsScreenState extends ConsumerState<RequestsScreen> {
+class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
   final _scrollController = ScrollController();
   bool _isLoadingMore = false;
   bool _isFirstLoadDone = false;
@@ -23,8 +22,9 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        ref.read(requestsControllerProvider.notifier).getActiveRequestsList());
+    Future.microtask(() => ref
+        .read(requestsHistoryControllerProvider.notifier)
+        .getCompletedRequestsList());
     _scrollController.addListener(_onScroll);
   }
 
@@ -37,12 +37,12 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   }
 
   void _onScroll() {
-    final requestsState = ref.read(requestsControllerProvider);
+    final requestsState = ref.read(requestsHistoryControllerProvider);
     if (_isBottom && requestsState.hasMore && !_isLoadingMore) {
       _isLoadingMore = true;
       ref
-          .read(requestsControllerProvider.notifier)
-          .getActiveRequestsList()
+          .read(requestsHistoryControllerProvider.notifier)
+          .getCompletedRequestsList()
           .then((_) => _isLoadingMore = false);
     }
   }
@@ -56,10 +56,6 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
 
   void _doSomethingWithRequest(RequestEntity request) {
     print("Do something with ${request.title}");
-  }
-
-  void _addRequest() {
-    print("Adding new request...");
   }
 
   void _showRequestDetailDrawer(RequestEntity request) {
@@ -86,14 +82,9 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     );
   }
 
-  // Placeholder function for navigation
-  void _navigateToHistory() {
-    context.push('/requests/history');
-  }
-
   @override
   Widget build(BuildContext context) {
-    final requestsState = ref.watch(requestsControllerProvider);
+    final requestsState = ref.watch(requestsHistoryControllerProvider);
     final List<RequestEntity> data = requestsState.data;
 
     if (!_isFirstLoadDone && data.isEmpty) {
@@ -102,23 +93,16 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     _isFirstLoadDone = true;
 
     return Scaffold(
-      appBar: RequestsAppBar(
-        onNavigate: _navigateToHistory,
+      appBar: AppBar(
+        title: const Text("Requests History"),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addRequest,
-        tooltip: 'Add request',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: RefreshIndicator( // <-- RefreshIndicator now wraps ListView.builder
+      body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(requestsControllerProvider);
-          ref
-              .read(requestsControllerProvider.notifier)
-              .getActiveRequestsList();
+          await ref
+              .read(requestsHistoryControllerProvider.notifier)
+              .refreshCompletedRequestsList();
         },
-        child: ListView.builder( // <-- Moved ListView.builder here
+        child: ListView.builder(
           controller: _scrollController,
           itemCount: data.length + (requestsState.hasMore ? 1 : 0),
           itemBuilder: (context, index) {
@@ -130,14 +114,13 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                 ),
               );
             }
-
             if (data.isEmpty && !requestsState.hasMore) {
               return const Center(
                 child: Text('No more requests found.'),
               );
             }
             final request = data[index];
-            return Stack( // <-- Add the stack inside the item
+            return Stack(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -161,11 +144,11 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                       request: request,
                       showPreferredIcon: true,
                       onChipClick: () {},
-                      onClick: () => _showRequestDetailDrawer(request),
+                      onClick: () => _showRequestDetailDrawer(request), // <-- Now opens the drawer
                     ),
                   ),
                 ),
-                if (requestsState.error != null) // <-- Now correctly inside a positioned
+                if (requestsState.error != null)
                   Positioned(
                     bottom: 16,
                     left: 16,

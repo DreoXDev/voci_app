@@ -3,11 +3,19 @@ import 'package:voci_app/features/requests/data/providers.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_active_requests.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
 import 'package:voci_app/features/requests/presentation/controllers/requests_controller.dart';
+import '../domain/usecases/get_completed_requests.dart';
+import 'controllers/request_history_controller.dart';
 
 final getActiveRequestsProvider = Provider<GetActiveRequests>((ref) {
   final requestRepository = ref.watch(requestRepositoryProvider);
   return GetActiveRequests(requestRepository);
 });
+
+final getCompletedRequestsProvider = Provider<GetCompletedRequests>((ref) {
+  final requestRepository = ref.read(requestRepositoryProvider);
+  return GetCompletedRequests(requestRepository);
+});
+
 final getHomelessNamesProvider = Provider<GetHomelessNames>((ref) {
   final homelessRepository = ref.watch(requestsHomelessRepositoryProvider);
   return GetHomelessNames(homelessRepository);
@@ -20,3 +28,13 @@ final requestsControllerProvider =
     ref.watch(getHomelessNamesProvider),
   ),
 );
+
+final requestsHistoryControllerProvider = StateNotifierProvider<
+    RequestsHistoryController, RequestsHistoryState>((ref) {
+  final getCompletedRequests = ref.read(getCompletedRequestsProvider);
+  final getHomelessNames = ref.read(getHomelessNamesProvider);
+  return RequestsHistoryController(
+    getCompletedRequests,
+    getHomelessNames,
+  );
+});
