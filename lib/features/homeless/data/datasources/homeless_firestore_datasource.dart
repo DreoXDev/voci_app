@@ -7,7 +7,6 @@ class HomelessFirestoreDatasource {
   HomelessFirestoreDatasource({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  // This is the name of the collection in Firestore
   static const String _collectionName = 'homelesses';
   static const int _batchSize = 15;
 
@@ -19,11 +18,9 @@ class HomelessFirestoreDatasource {
       fromFirestore: Homeless.fromFirestore,
       toFirestore: (Homeless homeless, _) => homeless.toMap(),
     )
-        .orderBy(FieldPath.documentId) //Important for pagination consistency
         .limit(_batchSize);
     print('getHomelessList: Base query created');
 
-    // If a last document is provided, start after that document
     if (lastDocument != null) {
       print('getHomelessList: Applying startAfterDocument');
       query = query.startAfterDocument(lastDocument);
@@ -35,46 +32,28 @@ class HomelessFirestoreDatasource {
 
     print('getHomelessList: Mapping documents to Homeless objects');
     final homelessList = querySnapshot.docs.map((doc) => doc.data()).toList();
-    print('getHomelessList: Returning ${homelessList.length} Homeless objects');
+    print('getHomelessList: Mapped documents, found ${homelessList.length} Homeless objects');
 
     return homelessList;
   }
 
-  Future<(List<Homeless>, DocumentSnapshot?)> searchHomeless(
-      {required String searchQuery, DocumentSnapshot? lastDocument}) async {
+  Future<(List<Homeless>, DocumentSnapshot?)> searchHomeless({
+    required String searchQuery,
+    DocumentSnapshot? lastDocument
+  }) async {
     print('searchHomeless: Started, searchQuery: $searchQuery, lastDocument: $lastDocument');
 
-    if (searchQuery.isEmpty) {
-      print('searchHomeless: searchQuery is empty, returning empty list');
-      return (<Homeless>[], null);
-    }
-    print('searchHomeless: Creating base query');
     Query<Homeless> query = _firestore
         .collection(_collectionName)
         .withConverter(
       fromFirestore: Homeless.fromFirestore,
       toFirestore: (Homeless homeless, _) => homeless.toMap(),
-    );
-
-    print('searchHomeless: Base query created');
-    print('searchHomeless: Creating where clauses');
-
-    query = query
+    ).orderBy('name')
         .where('name', isGreaterThanOrEqualTo: searchQuery)
-        .where('name', isLessThan: '${searchQuery}z');
-
-    print('searchHomeless: Where clauses created');
-
-    query = query
-        .orderBy('name') // Assuming you want to sort results by name
+        .where('name', isLessThan: '${searchQuery}z')
         .limit(_batchSize);
 
-    print('searchHomeless: Query with orderby and limit created');
-    // The problem was this, when searching we can not use the last document
-    //if (lastDocument != null) {
-    //  print('searchHomeless: Applying startAfterDocument');
-    //  query = query.startAfterDocument(lastDocument);
-    //}
+    print('searchHomeless: Base query created');
 
     print('searchHomeless: Getting querySnapshot');
     final querySnapshot = await query.get();
@@ -83,7 +62,6 @@ class HomelessFirestoreDatasource {
     print('searchHomeless: Mapping documents to Homeless objects');
     final homelessList = querySnapshot.docs.map((doc) => doc.data()).toList();
     print('searchHomeless: Mapped documents, found ${homelessList.length} Homeless objects');
-
     DocumentSnapshot? newLastDocument;
     if(homelessList.isNotEmpty){
       print('searchHomeless: Setting newLastDocument to last document');
@@ -92,7 +70,6 @@ class HomelessFirestoreDatasource {
       print('searchHomeless: List is empty, newLastDocument will be null');
     }
     print('searchHomeless: Returning results');
-
     return (homelessList, newLastDocument);
   }
 
@@ -104,7 +81,6 @@ class HomelessFirestoreDatasource {
       fromFirestore: Homeless.fromFirestore,
       toFirestore: (Homeless homeless, _) => homeless.toMap(),
     )
-        .orderBy(FieldPath.documentId) //Important for pagination consistency
         .limit(_batchSize);
     print('getLastVisibleDocument: Base query created');
     if (lastDocument != null) {
@@ -120,5 +96,33 @@ class HomelessFirestoreDatasource {
     }
     print('getLastVisibleDocument: No documents, returning null');
     return null;
+  }
+
+  Future<Map<String, String>> getHomelessNames(
+      {required Set<String> homelessIds}
+      ) async {
+    print('getHomelessNames: Started, homelessIds: $homelessIds');
+    if (homelessIds.isEmpty) {
+      print('getHomelessNames: No homeless IDs provided, returning empty map.');
+      return {};
+    }
+    final query = _firestore
+        .collection(_collectionName)
+        .where('id', whereIn: homelessIds)
+        .withConverter(
+        fromFirestore: Homeless.fromFirestore,
+        toFirestore: (Homeless homeless, _) => homeless.toMap()
+    );
+    print('getHomelessNames: Getting querySnapshot');
+    final querySnapshot = await query.get();
+    print('getHomelessNames: Got querySnapshot with ${querySnapshot.docs.length} documents');
+
+    final namesMap = <String, String>{};
+    for (final doc in querySnapshot.docs) {
+      final homeless = doc.data();
+      namesMap[homeless.id] = homeless.name;
+    }
+    print('getHomelessNames: returning $namesMap');
+    return namesMap;
   }
 }

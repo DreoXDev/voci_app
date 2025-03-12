@@ -13,7 +13,7 @@ class App extends ConsumerWidget {
         routerConfig: appRouterProvider,
         title: 'VoCi App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
           useMaterial3: true,
         ),
       ),

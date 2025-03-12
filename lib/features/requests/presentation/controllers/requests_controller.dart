@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_active_requests.dart';
-import 'package:voci_app/features/requests/data/models/request.dart';
+import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
+
 class RequestsController extends StateNotifier<RequestsState> {
   final GetActiveRequests _getActiveRequests;
+  final GetHomelessNames _getHomelessNames; // <-- Added!
 
-  RequestsController(this._getActiveRequests) : super(RequestsState.initial());
+  RequestsController(this._getActiveRequests, this._getHomelessNames)
+      : super(RequestsState.initial());
 
   Future<void> getActiveRequestsList() async {
     print('getActiveRequestsList: Started');
@@ -17,15 +20,23 @@ class RequestsController extends StateNotifier<RequestsState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       print('getActiveRequestsList: Getting requests data');
-      final (requestsList, newLastDocument) = await _getActiveRequests(GetActiveRequestsParams(lastDocument: state.lastDocument));
-      DocumentSnapshot? lastDocument = await _getActiveRequests.repository.getLastVisibleDocument(lastDocument: state.lastDocument);
-      _updateState(requestsList,newLastDocument ?? lastDocument);
+      final (requestsList, newLastDocument) = await _getActiveRequests(
+          GetActiveRequestsParams(lastDocument: state.lastDocument));
+      DocumentSnapshot? lastDocument =
+      await _getActiveRequests.repository.getLastVisibleDocument(
+          lastDocument: state.lastDocument);
+      _updateState(requestsList, newLastDocument ?? lastDocument);
+      //fetch the names of the homelesses
+      await getHomelessNames(requestsList);
     } catch (error, stackTrace) {
       print('getActiveRequestsList: Error - $error');
-      state = state.copyWith(isLoading: false, error: AsyncError(error, stackTrace));
+      state = state.copyWith(
+          isLoading: false, error: AsyncError(error, stackTrace));
     }
   }
-  void _updateState(List<RequestEntity> requestsList, DocumentSnapshot? newLastDocument){
+
+  void _updateState(
+      List<RequestEntity> requestsList, DocumentSnapshot? newLastDocument) {
     print('_updateState: new data ${requestsList.length}');
     List<RequestEntity> updatedList;
     if (state.lastDocument == null) {
@@ -39,6 +50,21 @@ class RequestsController extends StateNotifier<RequestsState> {
       isLoading: false,
       hasMore: newLastDocument != null,
     );
+  }
+
+  Future<void> getHomelessNames(List<RequestEntity> requests) async {
+    // Get all unique homeless IDs from the requests.
+    final Set<String> homelessIds = requests.map((r) => r.homelessID).toSet();
+
+    if (homelessIds.isNotEmpty) {
+      try {
+        // Fetch the homeless names for the IDs
+        await _getHomelessNames(
+            GetHomelessNamesParams(homelessIds: homelessIds));
+      } catch (e, stacktrace) {
+        print('getHomelessNames: Error fetching names - $e');
+      }
+    }
   }
 }
 

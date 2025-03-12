@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/providers.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
+import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 
 class RequestsScreen extends ConsumerStatefulWidget {
   const RequestsScreen({super.key});
@@ -13,6 +14,8 @@ class RequestsScreen extends ConsumerStatefulWidget {
 
 class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   final _scrollController = ScrollController();
+  bool _isLoadingMore = false; // <-- Added!
+  bool _isFirstLoadDone = false;// <-- Added!
 
   @override
   void initState() {
@@ -30,8 +33,10 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   }
 
   void _onScroll() {
-    if (_isBottom) {
-      ref.read(requestsControllerProvider.notifier).getActiveRequestsList();
+    final requestsState = ref.read(requestsControllerProvider);
+    if (_isBottom && requestsState.hasMore && !_isLoadingMore) {
+      _isLoadingMore = true;
+      ref.read(requestsControllerProvider.notifier).getActiveRequestsList().then((_) => _isLoadingMore = false);
     }
   }
 
@@ -42,16 +47,36 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     return currentScroll >= (maxScroll * 0.9);
   }
 
-  //This is an example function, you need to update the database and all that stuff
   void _doSomethingWithRequest(RequestEntity request){
-    //Here update the database
-    //Here do something with the data
     print("Do something with ${request.title}");
   }
-  // Placeholder function for the FAB action
+
   void _addRequest() {
-    // Implement the logic to add a new request here.
     print("Adding new request...");
+  }
+
+  void _showRequestDetailDrawer(RequestEntity request) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (BuildContext context) {
+        return RequestDetailDrawer(
+          request: request,
+          onAction1: () {
+            _doSomethingWithRequest(request);
+            Navigator.pop(context);
+          },
+          onAction2: () {
+            print("Action 2 pressed for request: ${request.title}");
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -59,8 +84,12 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     final requestsState = ref.watch(requestsControllerProvider);
     final List<RequestEntity> data = requestsState.data;
 
+    if (!_isFirstLoadDone && data.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    _isFirstLoadDone = true;
+
     return Scaffold(
-      //appBar:  HomeAppBar(searchController: _searchController),
       floatingActionButton: FloatingActionButton(
         onPressed: _addRequest,
         tooltip: 'Add request',
@@ -99,7 +128,6 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                       key: ValueKey(request.id),
                       direction: DismissDirection.startToEnd,
                       confirmDismiss: (direction) async {
-                        // Always return false so the item is not removed.
                         return false;
                       },
                       onDismissed: (direction){
@@ -116,7 +144,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                         request: request,
                         showPreferredIcon: true,
                         onChipClick: () {},
-                        onClick: () {},
+                        onClick: () => _showRequestDetailDrawer(request),
                       ),
                     ),
                   );

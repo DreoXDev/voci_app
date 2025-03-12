@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:voci_app/features/homeless/presentation/providers.dart';
 import 'package:intl/intl.dart';
-
 import '../../../../core/widgets/custom_chip.dart';
+import 'package:voci_app/features/homeless/presentation/providers.dart';
+
+import '../../../homeless/data/providers.dart';// <-- Added!
 
 class RequestListItem extends ConsumerWidget {
   final RequestEntity request;
