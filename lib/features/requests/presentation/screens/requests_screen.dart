@@ -1,13 +1,142 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
+import 'package:voci_app/features/requests/presentation/providers.dart';
+import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
 
-class RequestsScreen extends StatelessWidget {
+class RequestsScreen extends ConsumerStatefulWidget {
   const RequestsScreen({super.key});
 
   @override
+  ConsumerState<RequestsScreen> createState() => _RequestsScreenState();
+}
+
+class _RequestsScreenState extends ConsumerState<RequestsScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(requestsControllerProvider.notifier).getActiveRequestsList());
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      ref.read(requestsControllerProvider.notifier).getActiveRequestsList();
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
+  }
+
+  //This is an example function, you need to update the database and all that stuff
+  void _doSomethingWithRequest(RequestEntity request){
+    //Here update the database
+    //Here do something with the data
+    print("Do something with ${request.title}");
+  }
+  // Placeholder function for the FAB action
+  void _addRequest() {
+    // Implement the logic to add a new request here.
+    print("Adding new request...");
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Requests Screen'),
+    final requestsState = ref.watch(requestsControllerProvider);
+    final List<RequestEntity> data = requestsState.data;
+
+    return Scaffold(
+      //appBar:  HomeAppBar(searchController: _searchController),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addRequest,
+        tooltip: 'Add request',
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(requestsControllerProvider);
+            ref.read(requestsControllerProvider.notifier).getActiveRequestsList();
+          },
+          child: Stack(
+            children: [
+              ListView.builder(
+                controller: _scrollController,
+                itemCount: data.length + (requestsState.hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == data.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  if (data.isEmpty && !requestsState.hasMore) {
+                    return const Center(
+                      child: Text('No more requests found.'),
+                    );
+                  }
+                  final request = data[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Dismissible(
+                      key: ValueKey(request.id),
+                      direction: DismissDirection.startToEnd,
+                      confirmDismiss: (direction) async {
+                        // Always return false so the item is not removed.
+                        return false;
+                      },
+                      onDismissed: (direction){
+                        _doSomethingWithRequest(request);
+                      },
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 16),
+                        child: const Icon(Icons.message, color: Colors.white),
+                      ),
+                      child: RequestListItem(
+                        key: ValueKey(request.id),
+                        request: request,
+                        showPreferredIcon: true,
+                        onChipClick: () {},
+                        onClick: () {},
+                      ),
+                    ),
+                  );
+                },
+              ),
+              if (requestsState.error != null)
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.red,
+                    child: Text(
+                      'Error: ${requestsState.error.toString()}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                )
+            ],
+          )
       ),
     );
   }

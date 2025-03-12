@@ -83,9 +83,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar:  HomeAppBar(searchController: _searchController),
       floatingActionButton: FloatingActionButton(
         onPressed: _addHomeless,
+        tooltip: 'Add Homeless',
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(homelessControllerProvider);

@@ -35,23 +35,21 @@ class _HomeAppBarState extends ConsumerState<HomeAppBar> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       titleSpacing: 16.0,
       toolbarHeight: 80,
+      centerTitle: true,
       elevation: 0,
-      title: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-        child: SearchBar(
-          controller: widget.searchController,
-          hintText: 'Search',
-          leading: const Icon(Icons.search),
-          elevation: WidgetStateProperty.all(0),
-          backgroundColor: WidgetStateProperty.all(
-              Theme.of(context).colorScheme.primaryContainer),
-          onChanged: (value) {
-            // Only update state if it's different
-            if (query != value) {
-              ref.read(searchQueryProvider.notifier).state = value;
-            }
-          },
-        ),
+      title: SearchBar(
+        controller: widget.searchController,
+        hintText: 'Search',
+        leading: const Icon(Icons.search),
+        elevation: WidgetStateProperty.all(0),
+        backgroundColor: WidgetStateProperty.all(
+            Theme.of(context).colorScheme.primaryContainer),
+        onChanged: (value) {
+          // Only update state if it's different
+          if (query != value) {
+            ref.read(searchQueryProvider.notifier).state = value;
+          }
+        },
       ),
     );
   }
