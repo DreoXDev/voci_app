@@ -55,11 +55,9 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   }
 
   void _doSomethingWithRequest(RequestEntity request) {
-    print("Do something with ${request.title}");
   }
 
   void _addRequest() {
-    print("Adding new request...");
   }
 
   void _showRequestDetailDrawer(RequestEntity request) {
@@ -78,7 +76,6 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
             Navigator.pop(context);
           },
           onAction2: () {
-            print("Action 2 pressed for request: ${request.title}");
             Navigator.pop(context);
           },
         );

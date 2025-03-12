@@ -55,7 +55,6 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
   }
 
   void _doSomethingWithRequest(RequestEntity request) {
-    print("Do something with ${request.title}");
   }
 
   void _showRequestDetailDrawer(RequestEntity request) {
@@ -74,7 +73,6 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
             Navigator.pop(context);
           },
           onAction2: () {
-            print("Action 2 pressed for request: ${request.title}");
             Navigator.pop(context);
           },
         );

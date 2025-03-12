@@ -71,13 +71,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _doSomethingWithHomeless(HomelessEntity homeless) {
     //Here update the database
     //Here do something with the data
-    print("Do something with ${homeless.name}");
   }
 
   // Placeholder function for the FAB action
   void _addHomeless() {
     // Implement the logic to add a new homeless person here.
-    print("Adding new homeless person...");
   }
 
   @override

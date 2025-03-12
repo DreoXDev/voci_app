@@ -52,9 +52,7 @@ class StatusLEDState extends State<StatusLED>
         return Colors.yellow;
       case HomelessStatus.red: // <-- Changed!
         return Colors.red;
-      case HomelessStatus.gray: // <-- Changed!
-      default:
-        return Colors.grey;
+      case HomelessStatus.gray: return Colors.grey;
     }
   }
 

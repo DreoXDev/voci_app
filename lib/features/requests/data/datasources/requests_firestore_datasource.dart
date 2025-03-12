@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
+import 'package:voci_app/core/errors/firestore_errors.dart';
+import 'package:voci_app/core/errors/core_errors.dart';
 
 class RequestsFirestoreDatasource {
   final FirebaseFirestore _firestore;
@@ -32,74 +34,64 @@ class RequestsFirestoreDatasource {
   // Generic method to get requests by status
   Future<(List<Request>, DocumentSnapshot?)> _getRequestsByStatus(
       {required String status, DocumentSnapshot? lastDocument}) async {
-    print(
-        'getRequestsByStatus: Started, status: $status, lastDocument: $lastDocument');
 
     Query<Request> query = _firestore
         .collection(_collectionName)
         .withConverter(
-          fromFirestore: Request.fromFirestore,
-          toFirestore: (Request request, _) => request.toMap(),
-        )
-        .where('status', isEqualTo: status) // Filter by status
-        .orderBy('timestamp', descending: true) //Order by the most recient one
+      fromFirestore: Request.fromFirestore,
+      toFirestore: (Request request, _) => request.toMap(),
+    )
+        .where('status', isEqualTo: status)
+        .orderBy('timestamp', descending: true)
         .limit(_batchSize);
 
-    print('getRequestsByStatus: Base query created');
 
     if (lastDocument != null) {
-      print('getRequestsByStatus: Applying startAfterDocument');
       query = query.startAfterDocument(lastDocument);
     }
+    try {
+      final querySnapshot = await query.get();
 
-    print('getRequestsByStatus: Getting querySnapshot');
-    final querySnapshot = await query.get();
-    print(
-        'getRequestsByStatus: Got querySnapshot with ${querySnapshot.docs.length} documents');
+      final requestsList = querySnapshot.docs.map((doc) => doc.data()).toList();
 
-    print('getRequestsByStatus: Mapping documents to Request objects');
-    final requestsList = querySnapshot.docs.map((doc) => doc.data()).toList();
-    print(
-        'getRequestsByStatus: Mapped documents, found ${requestsList.length} Request objects');
+      DocumentSnapshot? newLastDocument;
+      if (requestsList.isNotEmpty) {
+        newLastDocument = querySnapshot.docs.last;
+      } else {
+      }
 
-    DocumentSnapshot? newLastDocument;
-    if (requestsList.isNotEmpty) {
-      print('getRequestsByStatus: Setting newLastDocument to last document');
-      newLastDocument = querySnapshot.docs.last;
-    } else {
-      print('getRequestsByStatus: List is empty, newLastDocument will be null');
+      return (requestsList, newLastDocument);
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
     }
-    print('getRequestsByStatus: Returning results');
-
-    return (requestsList, newLastDocument);
   }
 
   Future<DocumentSnapshot?> getLastVisibleDocument(
       {String status = _todoStatus, DocumentSnapshot? lastDocument}) async {
-    print('getLastVisibleDocument: Started');
     Query<Request> query = _firestore
         .collection(_collectionName)
         .withConverter(
-          fromFirestore: Request.fromFirestore,
-          toFirestore: (Request request, _) => request.toMap(),
-        )
+      fromFirestore: Request.fromFirestore,
+      toFirestore: (Request request, _) => request.toMap(),
+    )
         .where('status', isEqualTo: status)
         .orderBy('timestamp', descending: true)
         .limit(_batchSize);
-    print('getLastVisibleDocument: Base query created');
     if (lastDocument != null) {
-      print('getLastVisibleDocument: Applying startAfterDocument');
       query = query.startAfterDocument(lastDocument);
     }
-    print('getLastVisibleDocument: Getting querySnapshot');
-    final querySnapshot = await query.get();
-    print(
-        'getLastVisibleDocument: Got querySnapshot with ${querySnapshot.docs.length} documents');
-    if (querySnapshot.docs.isNotEmpty) {
-      print('getLastVisibleDocument: Returning last document');
-      return querySnapshot.docs.last;
+    try {
+      final querySnapshot = await query.get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.last;
+      }
+      return null;
+    } on FirebaseException catch (e) {
+      throw FirestoreError(message: 'Firebase exception: ${e.message}');
+    } catch (e) {
+      throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
     }
-    print('getLastVisibleDocument: No documents, returning null');
-    return null;
   }
 }

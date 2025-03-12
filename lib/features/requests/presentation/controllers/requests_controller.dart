@@ -1,25 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voci_app/core/errors/core_errors.dart';
+import 'package:voci_app/core/errors/firestore_errors.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_active_requests.dart';
 import 'package:voci_app/features/requests/domain/usecases/get_homeless_names.dart';
 
 class RequestsController extends StateNotifier<RequestsState> {
   final GetActiveRequests _getActiveRequests;
-  final GetHomelessNames _getHomelessNames; // <-- Added!
+  final GetHomelessNames _getHomelessNames;
 
   RequestsController(this._getActiveRequests, this._getHomelessNames)
       : super(RequestsState.initial());
 
   Future<void> getActiveRequestsList() async {
-    print('getActiveRequestsList: Started');
     if (state.isLoading || !state.hasMore) {
-      print('getActiveRequestsList: early return, is loading or has no more');
       return;
     }
     state = state.copyWith(isLoading: true, error: null);
     try {
-      print('getActiveRequestsList: Getting requests data');
       final (requestsList, newLastDocument) = await _getActiveRequests(
           GetActiveRequestsParams(lastDocument: state.lastDocument));
       DocumentSnapshot? lastDocument = await _getActiveRequests.repository
@@ -27,8 +27,13 @@ class RequestsController extends StateNotifier<RequestsState> {
       _updateState(requestsList, newLastDocument ?? lastDocument);
       //fetch the names of the homelesses
       await getHomelessNames(requestsList);
+    } on FirestoreError catch (e) {
+      state = state.copyWith(
+          isLoading: false, error: AsyncError(e, StackTrace.current));
+    } on UnexpectedError catch (e) {
+      state = state.copyWith(
+          isLoading: false, error: AsyncError(e, StackTrace.current));
     } catch (error, stackTrace) {
-      print('getActiveRequestsList: Error - $error');
       state = state.copyWith(
           isLoading: false, error: AsyncError(error, stackTrace));
     }
@@ -36,7 +41,6 @@ class RequestsController extends StateNotifier<RequestsState> {
 
   void _updateState(
       List<RequestEntity> requestsList, DocumentSnapshot? newLastDocument) {
-    print('_updateState: new data ${requestsList.length}');
     List<RequestEntity> updatedList;
     if (state.lastDocument == null) {
       updatedList = [...requestsList];
@@ -60,8 +64,14 @@ class RequestsController extends StateNotifier<RequestsState> {
         // Fetch the homeless names for the IDs
         await _getHomelessNames(
             GetHomelessNamesParams(homelessIds: homelessIds));
+      } on FirestoreError catch (e) {
+        if (kDebugMode) {
+          print('Error fetching homeless names: $e');
+        }
       } catch (e) {
-        print('getHomelessNames: Error fetching names - $e');
+        if (kDebugMode) {
+          print('Error fetching homeless names: $e');
+        }
       }
     }
   }
@@ -83,11 +93,11 @@ class RequestsState {
   });
 
   factory RequestsState.initial() => RequestsState(
-        data: [],
-        lastDocument: null,
-        isLoading: false,
-        hasMore: true,
-      );
+    data: [],
+    lastDocument: null,
+    isLoading: false,
+    hasMore: true,
+  );
 
   RequestsState copyWith({
     List<RequestEntity>? data,
