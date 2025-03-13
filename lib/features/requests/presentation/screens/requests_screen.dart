@@ -59,6 +59,56 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     //TODO: add a correct function
   }
 
+  void _modifyRequest(RequestEntity request) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return AddModifyRequestDialog(
+          title: 'Modify Request',
+          initialRequest: request.toModel(),
+          onSave: (Request modifiedRequest) async {
+            try {
+              final updates = modifiedRequest.toMap();
+              await ref
+                  .read(requestsControllerProvider.notifier)
+                  .modifyRequest(request.id, updates);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Request modified successfully')),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error modifying request: $e')),
+                );
+              }
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _completeRequest(RequestEntity request) async {
+    try {
+      await ref
+          .read(requestsControllerProvider.notifier)
+          .completeRequest(request.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request completed successfully')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error completing request: $e')),
+      );
+    }
+  }
+
   void _addRequest() {
     showModalBottomSheet(
       context: context,
@@ -102,10 +152,11 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
         return RequestDetailDrawer(
           request: request,
           onAction1: () {
-            _doSomethingWithRequest(request);
+            _modifyRequest(request);
             Navigator.pop(context);
           },
           onAction2: () {
+            _completeRequest(request);
             Navigator.pop(context);
           },
         );
@@ -113,7 +164,6 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     );
   }
 
-  // Placeholder function for navigation
   void _navigateToHistory() {
     context.push('/requests/history');
   }
@@ -138,74 +188,88 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: RefreshIndicator( // <-- RefreshIndicator now wraps ListView.builder
+      body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(requestsControllerProvider);
-          ref
+          await ref
               .read(requestsControllerProvider.notifier)
               .getActiveRequestsList();
         },
-        child: ListView.builder( // <-- Moved ListView.builder here
-          controller: _scrollController,
-          itemCount: data.length + (requestsState.hasMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == data.length) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
+        child: LayoutBuilder(
+          builder: (context, constraints) {
             if (data.isEmpty && !requestsState.hasMore) {
-              return const Center(
-                child: Text('No more requests found.'),
-              );
-            }
-            final request = data[index];
-            return Stack( // <-- Add the stack inside the item
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Dismissible(
-                    key: ValueKey(request.id),
-                    direction: DismissDirection.startToEnd,
-                    confirmDismiss: (direction) async {
-                      return false;
-                    },
-                    onDismissed: (direction) {
-                      _doSomethingWithRequest(request);
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 16),
-                      child: const Icon(Icons.message, color: Colors.white),
-                    ),
-                    child: RequestListItem(
-                      key: ValueKey(request.id),
-                      request: request,
-                      showPreferredIcon: true,
-                      onChipClick: () {},
-                      onClick: () => _showRequestDetailDrawer(request),
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: constraints.maxHeight,
+                  child: const Center(
+                    child: Text(
+                      'No more requests found. Pull down to refresh.',
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
-                if (requestsState.error != null) // <-- Now correctly inside a positioned
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      color: Colors.red,
-                      child: Text(
-                        'Error: ${requestsState.error.toString()}',
-                        style: const TextStyle(color: Colors.white),
+              );
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: _scrollController,
+              itemCount: data.length + (requestsState.hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == data.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                final request = data[index];
+                return Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Dismissible(
+                        key: ValueKey(request.id),
+                        direction: DismissDirection.startToEnd,
+                        confirmDismiss: (direction) async {
+                          return false;
+                        },
+                        onDismissed: (direction) {
+                          _doSomethingWithRequest(request);
+                        },
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 16),
+                          child: const Icon(Icons.message, color: Colors.white),
+                        ),
+                        child: RequestListItem(
+                          key: ValueKey(request.id),
+                          request: request,
+                          showPreferredIcon: true,
+                          onChipClick: () {},
+                          onClick: () => _showRequestDetailDrawer(request),
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                    if (requestsState.error != null)
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          color: Colors.red,
+                          child: Text(
+                            'Error: ${requestsState.error.toString()}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             );
           },
         ),

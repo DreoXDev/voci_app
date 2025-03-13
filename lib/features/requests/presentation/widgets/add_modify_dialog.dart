@@ -7,11 +7,11 @@ class AddModifyRequestDialog extends StatefulWidget {
   final Function(Request) onSave;
 
   const AddModifyRequestDialog({
-    Key? key,
+    super.key,
     required this.title,
     this.initialRequest,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   AddModifyRequestDialogState createState() => AddModifyRequestDialogState();

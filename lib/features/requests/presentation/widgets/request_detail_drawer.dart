@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:voci_app/core/widgets/custom_chip.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
+import 'package:voci_app/features/requests/data/models/request.dart';
 
 import '../../../homeless/data/providers.dart';
 
@@ -22,6 +23,8 @@ class RequestDetailDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homelessNames = ref.watch(homelessNamesProvider);
     final homelessName = homelessNames[request.homelessID] ?? "Unknown";
+    final bool isRequestDone = request.status == RequestStatus.done.name;
+
     return SizedBox(
       height: MediaQuery.of(context).size.height / 2,
       child: Padding(
@@ -71,14 +74,22 @@ class RequestDetailDrawer extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: onAction1,
-                    child: const Text('Action 1'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: isRequestDone ? Colors.red : null),
+                    child: Text(
+                      isRequestDone ? 'Delete' : 'Modify',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: onAction2,
-                    child: const Text('Action 2'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: isRequestDone ? Colors.green : null),
+                    child: Text(
+                      isRequestDone ? 'Reactivate' : 'Complete',
+                    ),
                   ),
                 ),
               ],

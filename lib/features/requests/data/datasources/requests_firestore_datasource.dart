@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
 import 'package:voci_app/core/errors/firestore_errors.dart';
 import 'package:voci_app/core/errors/core_errors.dart';
-import 'package:voci_app/features/requests/domain/repositories/request_repository.dart';
 
 class RequestsFirestoreDatasource {
   final FirebaseFirestore _firestore;
@@ -92,6 +91,7 @@ class RequestsFirestoreDatasource {
       throw UnexpectedError(message: 'Unexpected error: ${e.toString()}');
     }
   }
+
   Future<String> addRequest({required Request request}) async {
     try {
       final DocumentReference<Request> docRef = await _firestore
@@ -113,10 +113,22 @@ class RequestsFirestoreDatasource {
       {required String requestId,
         required Map<String, dynamic> updates}) async {
     try {
-      await _firestore
+      // 1. Get the document by id
+      final docSnapshot = await _firestore
           .collection(_collectionName)
-          .doc(requestId)
-          .update(updates);
+          .where('id', isEqualTo: requestId)
+          .get();
+
+      // 2. Check if the doc exists
+      if (docSnapshot.docs.isEmpty) {
+        throw UnexpectedError(message: 'Document with ID $requestId not found');
+      }
+
+      // 3. Get the docRef.
+      final docRef = docSnapshot.docs.first.reference;
+
+      // 4. Update the doc.
+      await docRef.update(updates);
     } on FirebaseException catch (e) {
       throw FirestoreError(message: 'Firebase exception: ${e.message}');
     } catch (e) {
@@ -126,7 +138,22 @@ class RequestsFirestoreDatasource {
 
   Future<void> deleteRequest({required String requestId}) async {
     try {
-      await _firestore.collection(_collectionName).doc(requestId).delete();
+      // 1. Get the document by id
+      final docSnapshot = await _firestore
+          .collection(_collectionName)
+          .where('id', isEqualTo: requestId)
+          .get();
+
+      // 2. Check if the doc exists
+      if (docSnapshot.docs.isEmpty) {
+        throw UnexpectedError(message: 'Document with ID $requestId not found');
+      }
+
+      // 3. Get the docRef.
+      final docRef = docSnapshot.docs.first.reference;
+
+      // 4. Delete the doc.
+      await docRef.delete();
     } on FirebaseException catch (e) {
       throw FirestoreError(message: 'Firebase exception: ${e.message}');
     } catch (e) {
@@ -137,11 +164,24 @@ class RequestsFirestoreDatasource {
   Future<void> updateRequestStatus(
       {required String requestId, required RequestStatus status}) async {
     try {
-      final String statusString = status == RequestStatus.todo ? _todoStatus : _doneStatus;
-      await _firestore
+      // 1. Get the document by id
+      final docSnapshot = await _firestore
           .collection(_collectionName)
-          .doc(requestId)
-          .update({'status': statusString});
+          .where('id', isEqualTo: requestId)
+          .get();
+
+      // 2. Check if the doc exists
+      if (docSnapshot.docs.isEmpty) {
+        throw UnexpectedError(message: 'Document with ID $requestId not found');
+      }
+
+      // 3. Get the docRef.
+      final docRef = docSnapshot.docs.first.reference;
+      final String statusString =
+      status == RequestStatus.todo ? _todoStatus : _doneStatus;
+
+      // 4. Update the doc.
+      await docRef.update({'status': statusString});
     } on FirebaseException catch (e) {
       throw FirestoreError(message: 'Firebase exception: ${e.message}');
     } catch (e) {
