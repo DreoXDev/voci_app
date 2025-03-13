@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
-
 import '../providers.dart';
 
 class RequestsHistoryScreen extends ConsumerStatefulWidget {
@@ -54,7 +53,45 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
     return currentScroll >= (maxScroll * 0.9);
   }
 
-  void _doSomethingWithRequest(RequestEntity request) {
+  void _activateRequest(RequestEntity request) async {
+    try {
+      await ref
+          .read(requestsHistoryControllerProvider.notifier)
+          .activateRequest(request.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request re-activated successfully')),
+      );
+      _refreshRequests();
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error re-activating request: $e')),
+      );
+    }
+  }
+
+  void _deleteRequest(RequestEntity request) async {
+    try {
+      await ref
+          .read(requestsHistoryControllerProvider.notifier)
+          .deleteRequest(request.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request deleted successfully')),
+          );
+      _refreshRequests();
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting request: $e')),
+      );
+    }
+  }
+
+  void _refreshRequests() {
+    ref.invalidate(requestsHistoryControllerProvider);
+    ref.read(requestsHistoryControllerProvider.notifier).getCompletedRequestsList();
   }
 
   void _showRequestDetailDrawer(RequestEntity request) {
@@ -69,10 +106,11 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
         return RequestDetailDrawer(
           request: request,
           onAction1: () {
-            _doSomethingWithRequest(request);
+            _activateRequest(request);
             Navigator.pop(context);
           },
           onAction2: () {
+            _deleteRequest(request);
             Navigator.pop(context);
           },
         );
@@ -96,9 +134,7 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await ref
-              .read(requestsHistoryControllerProvider.notifier)
-              .refreshCompletedRequestsList();
+          _refreshRequests();
         },
         child: ListView.builder(
           controller: _scrollController,
@@ -122,28 +158,12 @@ class _RequestsHistoryScreenState extends ConsumerState<RequestsHistoryScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Dismissible(
+                  child: RequestListItem(
                     key: ValueKey(request.id),
-                    direction: DismissDirection.startToEnd,
-                    confirmDismiss: (direction) async {
-                      return false;
-                    },
-                    onDismissed: (direction) {
-                      _doSomethingWithRequest(request);
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 16),
-                      child: const Icon(Icons.message, color: Colors.white),
-                    ),
-                    child: RequestListItem(
-                      key: ValueKey(request.id),
-                      request: request,
-                      showPreferredIcon: true,
-                      onChipClick: () {},
-                      onClick: () => _showRequestDetailDrawer(request), // <-- Now opens the drawer
-                    ),
+                    request: request,
+                    showPreferredIcon: true,
+                    onChipClick: () {},
+                    onClick: () => _showRequestDetailDrawer(request),
                   ),
                 ),
                 if (requestsState.error != null)

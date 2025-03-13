@@ -25,7 +25,7 @@ final appRouterProvider = GoRouter(
           path: '/homeless',
           pageBuilder: (context, state) => CustomTransitionPage<void>(
             key: state.pageKey,
-            child: const HomeScreen(),
+            child: const HomelessScreen(),
             transitionsBuilder: (BuildContext context,
                 Animation<double> animation,
                 Animation<double> secondaryAnimation,

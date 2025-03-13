@@ -5,7 +5,7 @@ import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/providers.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
-import '../widgets/add_modify_dialog.dart';
+import '../widgets/add_modify_request_dialog.dart';
 import '../widgets/request_app_bar.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
 
@@ -55,10 +55,6 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
     return currentScroll >= (maxScroll * 0.9);
   }
 
-  void _doSomethingWithRequest(RequestEntity request) {
-    //TODO: add a correct function
-  }
-
   void _modifyRequest(RequestEntity request) {
     showModalBottomSheet(
       context: context,
@@ -79,6 +75,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                   const SnackBar(content: Text('Request modified successfully')),
                 );
               }
+              _refreshRequests();
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -126,6 +123,7 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                   const SnackBar(content: Text('Request added successfully')),
                 );
               }
+              _refreshRequests();
             } catch (e) {
               // Handle errors
               if (context.mounted) {
@@ -153,10 +151,10 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
           request: request,
           onAction1: () {
             _modifyRequest(request);
-            Navigator.pop(context);
           },
           onAction2: () {
             _completeRequest(request);
+            _refreshRequests();
             Navigator.pop(context);
           },
         );
@@ -166,6 +164,11 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
 
   void _navigateToHistory() {
     context.push('/requests/history');
+  }
+
+  void _refreshRequests() {
+    ref.invalidate(requestsControllerProvider);
+    ref.read(requestsControllerProvider.notifier).getActiveRequestsList();
   }
 
   @override
@@ -234,16 +237,16 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
                         key: ValueKey(request.id),
                         direction: DismissDirection.startToEnd,
                         confirmDismiss: (direction) async {
-                          return false;
+                          return true;
                         },
                         onDismissed: (direction) {
-                          _doSomethingWithRequest(request);
+                          _completeRequest(request);
                         },
                         background: Container(
-                          color: Colors.red,
+                          color: Theme.of(context).colorScheme.primary,
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.only(left: 16),
-                          child: const Icon(Icons.message, color: Colors.white),
+                          child: const Icon(Icons.check),
                         ),
                         child: RequestListItem(
                           key: ValueKey(request.id),

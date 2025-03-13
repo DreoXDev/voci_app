@@ -81,9 +81,9 @@ class HomelessController extends StateNotifier<HomelessState> {
   Future<HomelessByIdState> getHomelessById(
       {required String homelessId}) async {
     try {
-      final getHomelessById = GetHomelessById(_repository); // <-- Changed!
+      final getHomelessById = GetHomelessById(_repository);
       final homeless = await getHomelessById(
-          GetHomelessByIdParams(homelessId: homelessId)); // <-- Changed!
+          GetHomelessByIdParams(homelessId: homelessId));
       return HomelessByIdState(value: AsyncData(homeless));
     } on FirestoreError catch (e) {
       return HomelessByIdState(

@@ -74,10 +74,8 @@ class RequestDetailDrawer extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: onAction1,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: isRequestDone ? Colors.red : null),
                     child: Text(
-                      isRequestDone ? 'Delete' : 'Modify',
+                      isRequestDone ? 'Reactivate' : 'Modify',
                     ),
                   ),
                 ),
@@ -85,10 +83,8 @@ class RequestDetailDrawer extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: onAction2,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: isRequestDone ? Colors.green : null),
                     child: Text(
-                      isRequestDone ? 'Reactivate' : 'Complete',
+                      isRequestDone ? 'Delete' : 'Complete',
                     ),
                   ),
                 ),

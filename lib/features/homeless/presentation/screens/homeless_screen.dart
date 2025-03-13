@@ -6,14 +6,14 @@ import 'package:voci_app/features/homeless/presentation/screens/homeless_profile
 import 'package:voci_app/features/homeless/presentation/widgets/home_app_bar.dart';
 import 'package:voci_app/features/homeless/presentation/widgets/homeless_list_item.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+class HomelessScreen extends ConsumerStatefulWidget {
+  const HomelessScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomelessScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomelessScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
 
@@ -141,16 +141,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         showPreferredIcon: true,
                         onChipClick: () {},
                         onClick: () {
-                          // <-- Corrected!
                           Navigator.of(context).push(
-                            // <-- Corrected!
                             MaterialPageRoute(
-                              // <-- Corrected!
                               builder: (context) => HomelessProfileScreen(
-                                  homelessId: homeless.id), // <-- Corrected!
-                            ), // <-- Corrected!
-                          ); // <-- Corrected!
-                        }, // <-- Corrected!
+                                  homelessId: homeless.id),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   );
@@ -170,7 +167,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 )
             ],
-          )),
+          )
+      ),
     );
   }
 }
