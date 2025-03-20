@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'core/routes/app_router.dart';
+import 'package:voci_app/core/routes/app_router.dart';
+import 'package:voci_app/features/auth/domain/entities/user_entity.dart';
 
 class App extends ConsumerWidget {
-  const App({super.key});
+  final UserEntity? user;
+  const App({super.key, this.user});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ProviderScope(
-      child: MaterialApp.router(
-        routerConfig: appRouterProvider,
-        title: 'VoCi App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
-          useMaterial3: true,
-        ),
-      ),
+    return MaterialApp.router(
+      routerConfig: appRouterProvider,
     );
   }
 }

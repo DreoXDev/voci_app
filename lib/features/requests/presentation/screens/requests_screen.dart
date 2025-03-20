@@ -5,7 +5,7 @@ import 'package:voci_app/features/requests/domain/entities/request_entity.dart';
 import 'package:voci_app/features/requests/presentation/providers.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_detail_drawer.dart';
 import 'package:voci_app/features/requests/presentation/widgets/request_list_item.dart';
-import '../widgets/add_modify_request_dialog.dart';
+import '../widgets/add_modify_dialog.dart';
 import '../widgets/request_app_bar.dart';
 import 'package:voci_app/features/requests/data/models/request.dart';
 
